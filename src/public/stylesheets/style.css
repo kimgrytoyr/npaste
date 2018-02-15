@@ -4,18 +4,36 @@ body {
 }
 
 h1 {
-  font-size: 130%;
+  font-size: 120%;
+}
+
+@media(max-width: 1024px) {
+  h1 {
+    font-size: 100%;
+  }
 }
 
 a {
   color: #00B7FF;
 }
 
+img.pasted {
+  max-width: 100%;
+}
+
 p.metadata {
   color: #666;
 }
 
+p.metadata span {
+  text-decoration: underline;
+}
+
 p.footer {
-  color: #666;
+  color: #999;
   font-size: 80%;
+}
+
+p.footer a {
+  color: #999;
 }

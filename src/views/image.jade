@@ -1,0 +1,13 @@
+extends layout
+
+block head
+  meta(name='viewport', content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0')
+
+block content
+  #content
+    include header.jade
+
+    p.
+      #[a(href="#{rawUrl}") #[img.pasted(src="#{data}")]]
+
+  include footer.jade

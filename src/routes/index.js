@@ -54,24 +54,32 @@ router.get('/:paste', (req, res, next) => {
   }
 
   const metadata = getMetadata(req.params.paste, config.path);
-  const data = fs.readFileSync(config.path + req.params.paste + '.' + metadata.extension);
+  let data = fs.readFileSync(config.path + req.params.paste + '.' + metadata.extension);
+
+  // TODO: Cleanup/simplification
+  let template = 'text';
+  let image = null;
+  let options = {
+    data: data,
+    paste: metadata,
+    postedAt: timeAgo(metadata.timestamp),
+    fullTimestamp: new Date(metadata.timestamp).toISOString(),
+    generatedTimestamp: new Date().toISOString(),
+    domain: config.uri_base,
+    url: config.uri_base + '/' + metadata.id,
+    rawUrl: config.uri_base + '/' + metadata.id + '/',
+    version: config.version
+  };
 
   if (typeof metadata.contentType === 'undefined') {
     return res.status(500).send('Invalid type');
   } else if (metadata.contentType != 'text/plain') {
-    return res.redirect('/' + req.params.paste + '/');
+    //return res.redirect('/' + req.params.paste + '/');
+    template = 'image';
+    options.data = 'data:' + metadata.contentType + ';base64, ' + new Buffer(data).toString('base64');
   }
 
-  // TODO: Cleanup/simplification
-  res.render('paste', {
-    data: data,
-    paste: metadata,
-    postedAt: timeAgo(metadata.timestamp),
-    fullTimestamp: new Date(metadata.timestamp).toUTCString(),
-    domain: config.uri_base,
-    url: config.uri_base + '/' + metadata.id,
-    version: config.version
-  });
+  res.render(template, options);
 });
 
 /* GET paste */
