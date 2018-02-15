@@ -4,10 +4,11 @@ const express = require('express');
 const multer  = require('multer')
 // TODO: Get path from config?
 const upload = multer({ dest: '../data/pastes' })
-const router = express.Router();
+const router = express.Router({ strict: true });
 const crypto = require('crypto');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
+const timeAgo = require('node-time-ago');
 const mmm = require('mmmagic'),
       Magic = mmm.Magic;
 
@@ -45,6 +46,37 @@ router.get('/', (req, res, next) => {
 
 /* GET paste */
 router.get('/:paste', (req, res, next) => {
+  // Syntax highlighted
+  const config = req.app.get('_config');
+
+  if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
+    return res.status(400).send('Paste not found');
+  }
+
+  const metadata = getMetadata(req.params.paste, config.path);
+  const data = fs.readFileSync(config.path + req.params.paste + '.' + metadata.extension);
+
+  if (typeof metadata.contentType === 'undefined') {
+    return res.status(500).send('Invalid type');
+  } else if (metadata.contentType != 'text/plain') {
+    return res.redirect('/' + req.params.paste + '/');
+  }
+
+  // TODO: Cleanup/simplification
+  res.render('paste', {
+    data: data,
+    paste: metadata,
+    postedAt: timeAgo(metadata.timestamp),
+    fullTimestamp: new Date(metadata.timestamp).toUTCString(),
+    domain: config.uri_base,
+    url: config.uri_base + '/' + metadata.id,
+    version: config.version
+  });
+});
+
+/* GET paste */
+router.get('/:paste/', (req, res, next) => {
+  // Raw data
   const config = req.app.get('_config');
 
   if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
@@ -58,7 +90,6 @@ router.get('/:paste', (req, res, next) => {
     return res.status(500).send('Invalid type');
   }
 
-  res.setHeader("Content-Type", metadata.contentType);
   return res.end(data, 'binary');
 });
 

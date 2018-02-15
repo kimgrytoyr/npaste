@@ -1,4 +1,5 @@
 {
+    "version": "v0.1",
     "admin_token": "mvrQXMdPOlPNThlm6vyv1WcAuuDbApISM1IDVp2bQGpSu5SQUnwVLAFqVPyZGQa",
     "uri_base": "http://localhost:3000",
     "filename_length": 16,

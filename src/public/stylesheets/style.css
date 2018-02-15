@@ -3,6 +3,19 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+h1 {
+  font-size: 130%;
+}
+
 a {
   color: #00B7FF;
+}
+
+p.metadata {
+  color: #666;
+}
+
+p.footer {
+  color: #666;
+  font-size: 80%;
 }
