@@ -1,5 +1,7 @@
 {
+    "admin_token": "mvrQXMdPOlPNThlm6vyv1WcAuuDbApISM1IDVp2bQGpSu5SQUnwVLAFqVPyZGQa",
     "uri_base": "https://paste.grytoyr.io",
     "filename_length": 16,
-    "path": "../data/pastes/"
+    "path": "../data/pastes/",
+    "max_age": 0
 }
