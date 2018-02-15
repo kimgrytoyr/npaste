@@ -48,7 +48,7 @@ router.get('/:paste', (req, res, next) => {
   const config = req.app.get('_config');
 
   if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
-      return res.status(400).send('Paste not found');
+    return res.status(400).send('Paste not found');
   }
 
   const metadata = getMetadata(req.params.paste, config.path);
@@ -67,7 +67,7 @@ router.get('/:paste/meta', (req, res, next) => {
   const config = req.app.get('_config');
 
   if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
-      return res.status(400).send('Paste not found');
+    return res.status(400).send('Paste not found');
   }
 
   const metadata = getMetadata(req.params.paste, config.path);
@@ -117,7 +117,7 @@ router.route('/')
       // Create .meta file
       // TODO: Move this to function or module
       fs.writeFileSync(config.path + filename + '.meta', JSON.stringify({
-				id: filename,
+        id: filename,
         timestamp: new Date().getTime(),
         contentType: contentType,
         extension: extension,
@@ -129,14 +129,14 @@ router.route('/')
 
       return res.status(200).send(config.uri_base + '/' + filename);
     });
-});
+  });
 
 /* DELETE paste */
 router.delete('/:paste', authenticate, (req, res, next) => {
   const config = req.app.get('_config');
 
   if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
-      return res.status(400).send('Paste not found');
+    return res.status(400).send('Paste not found');
   }
 
   const metadata = getMetadata(req.params.paste, config.path);

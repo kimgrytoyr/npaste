@@ -3,5 +3,5 @@
     "uri_base": "http://localhost:3000",
     "filename_length": 16,
     "path": "../data/pastes/",
-	"max_age": 0
+    "max_age": 0
 }
