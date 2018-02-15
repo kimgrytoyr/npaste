@@ -1,0 +1,4 @@
+# ignore data dir, except .gitignore
+data/*
+!data/.gitkeep
+
