@@ -27,6 +27,8 @@ app.set('_config', getConfig());
 
 const jobId = crontab.scheduleJob("* * * * *", () => {
   // Delete pastes older than X minutes
+  // TODO: Move somewhere else
+  // TODO: Change config from minutes to days?
   const config = getConfig();
   if (config.max_age <= 0) return;
 
