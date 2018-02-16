@@ -12,6 +12,7 @@ const crontab = require('node-crontab');
 const index = require('./routes/index');
 
 const app = express();
+app.disable('x-powered-by'); // dont show this header
 
 // TODO: Better config parsing?
 const env = process.env.NODE_ENV || 'dev';
