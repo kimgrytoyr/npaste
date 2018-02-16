@@ -142,7 +142,7 @@ router.route('/')
     const magic = new Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
     magic.detectFile(req.file.path, (err, result) => {
       if (err) throw err;
-      const type = result.split(';')[0];
+      let type = result.split(';')[0];
 
       if (type.split('/')[0] == 'text') {
         type = 'text/plain';
