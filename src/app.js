@@ -14,7 +14,7 @@ const index = require('./routes/index');
 const app = express();
 
 // TODO: Better config parsing?
-const env = process.env.NODE_ENV || 'dev';
+const env = process.env.NODE_ENV || 'development';
 const getConfig = () => {
   if (fs.existsSync('../data/config.' + env + '.json')) {
     const c = JSON.parse(fs.readFileSync('../data/config.' + env + '.json'));
