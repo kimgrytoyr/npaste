@@ -144,14 +144,14 @@ router.route('/')
       if (err) throw err;
       const type = result.split(';')[0];
 
-      if (type == 'text/plain') {
+      if (type.split('/')[0] == 'text') {
+        type = 'text/plain';
         extension = 'txt';
       } else if (type == 'image/jpg') {
         extension = 'jpg';
       } else if (type == 'image/png') {
         extension = 'png';
       }
-      const contentType = type;
 
       if (extension == null) {
         return res.status(400).send('Wrong file type');
@@ -160,7 +160,7 @@ router.route('/')
       const metadata = {
         id: filename,
         timestamp: new Date().getTime(),
-        contentType: contentType,
+        contentType: type,
         extension: extension,
         submitter: user.name
       }
