@@ -17,7 +17,7 @@ exports.run = () => {
         const diff = (now - (config.max_age * 1000 * 60));
 
         const aboveGlobalMaxAge = config.max_age > 0 && diff > metadata.timestamp;
-        const expired = metadata.expiresAt < now;
+        const expired = metadata.expiresAt !== null && metadata.expiresAt < now;
         if (aboveGlobalMaxAge || expired) {
           // Delete file..
           fs.unlinkSync(config.path + metadata.id + '.meta');
