@@ -1,4 +1,8 @@
 # TODO
+- Refactor code. Move stuff to modules etc.
+- Implement plain text flag when pasting text to ensure correct syntax highlighting
+- Implement "age" field when pasting. This allows pastes to automatically expire at a certain age.
+- Add boolean config "real_delete". If set to false, pastes will be archived instead of deleted when they expire.
 - Create script to create authentication token and add to data/tokens.json
 - Create bash script to paste text or image
 
@@ -11,3 +15,4 @@
   - If image, display image
 - Require basic authentication for POST and DELETE
 - Allow pasting of images (jpg, png)
+- Add basic syntax highlighting
