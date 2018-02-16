@@ -30,7 +30,7 @@ Displays metadata about the paste.
 
 ## Installation
 
-## Install local development environment
+### Install local development environment
 Requires: `git`, `docker`, `docker-compose`.
 
 ```
