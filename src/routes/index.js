@@ -173,6 +173,7 @@ router.route('/')
 
       // If provided, set paste age. If not provided, use default age from config.
       // Age of 0 means no expiration.
+      metadata.expiresAt = null;
       if (req.body.age) {
         metadata.expiresAt = helpers.parseAge(req.body.age);
       }

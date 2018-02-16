@@ -13,6 +13,8 @@ exports.parseAge = (age) => {
   if (unit.length == 0) unit = 's';
   age = parseInt(age);
 
+  if (age <= 0) return null;
+
   const now = new Date().getTime();
   let expiration = now;
   switch (unit) {
