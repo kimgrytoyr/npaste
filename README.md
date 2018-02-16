@@ -27,3 +27,45 @@ Displays a paste with the given ID. Both text and images.
 
 `GET /<ID>/meta`  
 Displays metadata about the paste.
+
+## Installation
+
+## Install local development environment
+Requires: `git`, `docker`, `docker-compose`.
+
+```
+git clone https://git.grytoyr.io/npaste
+cd npaste
+docker-compose up
+```
+
+The server will be accessible via http://localhost:3000.
+
+## Install in production
+Requires: `git`, `docker`.
+
+Decide which version (git tag) to run and check out the tag.
+```
+git clone https://git.grytoyr.io/npaste
+cd npaste
+git checkout $TAG_NAME
+```
+
+Modify the values in `data/config.production.json`.
+
+Build the docker image with (remember the dot at the end):
+`docker build -t npaste:latest .`
+
+Run the container: `docker run --init --name npaste_1 --restart=always --volume="$(pwd)/data:/home/node/app/data" --publish="3000:3000" -d npaste:latest`
+
+This will start the container and accept connections on port 3000. It's advised to use nginx or another reverse proxy to add features such as TLS, etc.
+
+## Upgrading in production
+Run `git pull` and checkout the tag you wish to upgrade to. Run the same build command (`docker build etc...`) as described in `Install in production`.
+
+Upgrading will at this time lead to some downtime.
+
+Stop and remove the container: `docker stop npaste_1 && docker stop npaste_1`
+
+After the commands above are done, issue the run command (`docker run etc...`) as described in `Install in production`.
+
