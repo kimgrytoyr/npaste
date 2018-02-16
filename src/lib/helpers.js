@@ -1,5 +1,17 @@
+// npm modules
+const fs = require('fs');
+
 // local modules
 const config = require('./config').getConfig();
+
+
+
+// Get metadata for a paste
+exports.getMetadata = (id, path) => {
+  // TODO: Error handling
+  return JSON.parse(fs.readFileSync(path + id + '.meta'));
+}
+
 
 // Parse the "age" POST field and return a correct age.
 exports.parseAge = (age) => {
