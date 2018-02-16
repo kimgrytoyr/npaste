@@ -41,7 +41,7 @@ docker-compose up
 
 The server will be accessible via http://localhost:3000.
 
-## Install in production
+### Install in production
 Requires: `git`, `docker`.
 
 Decide which version (git tag) to run and check out the tag.
@@ -60,7 +60,7 @@ Run the container: `docker run --init --name npaste_1 --restart=always --volume=
 
 This will start the container and accept connections on port 3000. It's advised to use nginx or another reverse proxy to add features such as TLS, etc.
 
-## Upgrading in production
+### Upgrading in production
 Run `git pull` and checkout the tag you wish to upgrade to. Run the same build command (`docker build etc...`) as described in `Install in production`.
 
 Upgrading will at this time lead to some downtime.
