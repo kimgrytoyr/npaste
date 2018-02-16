@@ -65,7 +65,7 @@ Run `git pull` and checkout the tag you wish to upgrade to. Run the same build c
 
 Upgrading will at this time lead to some downtime.
 
-Stop and remove the container: `docker stop npaste_1 && docker stop npaste_1`
+Stop and remove the container: `docker stop npaste_1 && docker rm npaste_1`
 
 After the commands above are done, issue the run command (`docker run etc...`) as described in `Install in production`.
 
