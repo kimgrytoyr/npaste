@@ -1,0 +1,119 @@
+#!/bin/sh
+
+usage() {
+    echo "Quick CLI for sending data to npaste"
+    echo ""
+    echo "Requires: curl"
+    echo ""
+    echo "npaste [OPTIONS] file"
+    printf "\t-h --help\n"
+    printf "\t-p --plaintext No syntax highlighting.\n"
+    printf "\t--age When to delete this item. Syntax: n[m|h|d|y], where n is an integer. minutes, hours, days, years. Example: 1h. Default: 0, ie. never deleted.\n"
+    printf "\t--config Default: $HOME/.config/npaste/cli.conf\n"
+    echo ""
+    echo "The supplied file may be a file with or without suffix or simply '-' for STDIN. Default if omitted is STDIN."
+}
+
+ntharg() {
+    # clever hack from: https://stackoverflow.com/a/14649955
+    shift $1
+    printf '%s\n' "$1"
+}
+LAST_ARG=$(ntharg $# "$@")
+
+# defaults
+NPASTE_IS_PLAINTEXT=0
+NPASTE_AGE=0
+NPASTE_CONFIG="$HOME/.config/npaste/cli.conf"
+NPASTE_FILE="-" # default stdin
+
+# get paramteres
+while [ "$1" != "" ]; do
+    PARAM=$(echo $1 | awk -F= '{print $1}')
+    VALUE=$(echo $1 | awk -F= '{print $2}')
+    case $PARAM in
+        -h | --help)
+            usage
+            exit
+            ;;
+        -p | --plaintext)
+            NPASTE_IS_PLAINTEXT=1
+            ;;
+        --age)
+            NPASTE_AGE=$VALUE
+            ;;
+        --config)
+            NPASTE_CONFIG=$VALUE
+            ;;
+        *)
+            if [ "$1" = "$LAST_ARG" ]; then
+                NPASTE_FILE="$1"
+            else
+                echo "ERROR: unknown parameter \"$PARAM\""
+                usage
+                exit 1
+            fi
+            ;;
+    esac
+    shift
+done
+
+NPASTE_USERNAME=""
+NPASTE_APIKEY=""
+NPASTE_URL=""
+# read config file for secrets
+while read -r line || [[ -n $line ]]; do
+    PARAM=$(echo $line | awk -F= '{print $1}')
+    VALUE=$(echo $line | awk -F= '{print $2}')
+    case $PARAM in
+        username)
+            NPASTE_USERNAME=$VALUE
+            ;;
+        apikey)
+            NPASTE_APIKEY=$VALUE
+            ;;
+        url)
+            NPASTE_URL=$VALUE
+            ;;
+    esac
+done < "$NPASTE_CONFIG"
+
+# check if we have info for auth
+if [ -z "$NPASTE_USERNAME" ] || [ -z "$NPASTE_APIKEY" ] || [ -z "$NPASTE_URL" ]; then
+    echo "Invalid config."
+    echo ""
+    echo "Example:"
+    printf "\tusername=johndoe\n"
+    printf "\tapikey=abcd\n"
+    printf "\turl=https://paste.example.com/\n"
+
+    exit 2
+fi
+
+# convert stdin to file, if applicable
+NPASTE_DELETE_AFTER_REQUEST=0
+if [ "$NPASTE_FILE" = "-" ]; then
+    NPASTE_FILE=$(mktemp)
+    cat > $NPASTE_FILE
+    NPASTE_DELETE_AFTER_REQUEST=1
+fi
+
+# upload file to npaste
+NPASTE_PASTE_URL=$(curl --basic --user "$NPASTE_USERNAME:$NPASTE_APIKEY" -F "paste=@$NPASTE_FILE" -F "plain=$NPASTE_IS_PLAINTEXT" -F "age=$NPASTE_AGE"  --silent "$NPASTE_URL")
+
+# delete temp files
+if [ $NPASTE_DELETE_AFTER_REQUEST -eq 1 ]; then
+    rm $NPASTE_FILE
+fi
+
+case "$NPASTE_PASTE_URL" in
+    http*)
+        printf "$NPASTE_PASTE_URL"
+        exit 0
+        ;;
+    *)
+        echo "API error: $NPASTE_PASTE_URL"
+        exit 3
+        ;;
+esac
+
