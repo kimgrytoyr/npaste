@@ -20,7 +20,6 @@ app.disable('x-powered-by'); // dont show this header
 app.set('_config', config);
 app.locals.config = config;
 
-
 // view engine setup
 app.locals.pretty = true; // Print pretty HTML
 app.set('views', path.join(__dirname, 'views'));
