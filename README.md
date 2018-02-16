@@ -2,28 +2,44 @@
 Simple personal pastebin and imagebin.
 
 ## Endpoints
-
-`POST /`  
-Allows you to post a new paste. Requires authentication.
+`POST` and `DELETE` requires authentication. Set your credentials in `data/tokens.json`.
 
 ### Posting a text file
+`POST /`
+
 ```
 curl --basic --user user:pass -F "paste=@test.txt" "http://localhost:3000/"
 ```
 
 ### Posting an image file (jpg/png)
+`POST /`
+
 ```
 curl --basic --user user:pass -F "paste=@image.jpg" "http://localhost:3000/"
 ```
 
+####  Options
+You can provide the following options as POST fields:
+
+`plain=1`  
+Do not use syntax highlighting
+
+`age=X[y|d|h|m]`  
+Set expiration time. `X` is an integer. Example: `1d` will make the paste self destruct after one day. If no time unit is provided, it will be parsed as seconds. Be aware that pastes are deleted only once per minute.
+
+### Delete a paste
 `DELETE /<ID>`  
-Deletes the paste with the given ID. Requires authentication.
+Deletes the paste with the given ID.
+
 ```
 curl --basic --user user:pass -X DELETE -F "paste=@test.txt" "http://localhost:3000/someidhere"
 ```
-
+### Display paste
 `GET /<ID>`  
-Displays a paste with the given ID. Both text and images.
+Displays a paste with the given ID.
+
+`GET /<ID>/`  
+Displays a paste in raw format.
 
 `GET /<ID>/meta`  
 Displays metadata about the paste.
