@@ -18,6 +18,7 @@ const env = process.env.NODE_ENV || 'dev';
 const getConfig = () => {
   if (fs.existsSync('../data/config.' + env + '.json')) {
     const c = JSON.parse(fs.readFileSync('../data/config.' + env + '.json'));
+    app.locals.version = c.version;
     return c;
   } else {
     throw Error('Unable to read config..');
