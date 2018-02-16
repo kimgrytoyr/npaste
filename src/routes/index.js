@@ -142,16 +142,16 @@ router.route('/')
     const magic = new Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
     magic.detectFile(req.file.path, (err, result) => {
       if (err) throw err;
-      const type = result.split(';')[0];
+      let type = result.split(';')[0];
 
-      if (type == 'text/plain') {
+      if (type.split('/')[0] == 'text') {
+        type = 'text/plain';
         extension = 'txt';
       } else if (type == 'image/jpg') {
         extension = 'jpg';
       } else if (type == 'image/png') {
         extension = 'png';
       }
-      const contentType = type;
 
       if (extension == null) {
         return res.status(400).send('Wrong file type');
@@ -160,22 +160,18 @@ router.route('/')
       const metadata = {
         id: filename,
         timestamp: new Date().getTime(),
-        contentType: contentType,
+        contentType: type,
         extension: extension,
         submitter: user.name
       }
 
       // Should this paste be rendered as plain text without highlighting?
       // TODO: Consider if this should be an option in the UI instead?
-      if (req.body.plain == 1) {
-        metadata.plain = true;
-      }
+      metadata.plain = req.body.plain == 1 ? true : false;
 
       // If provided, set paste age. If not provided, use default age from config.
       // Age of 0 means no expiration.
-      if (req.body.age) {
-        metadata.expiresAt = helpers.parseAge(req.body.age);
-      }
+      metadata.expiresAt = req.body.age ? helpers.parseAge(req.body.age) : null;
 
       // Create .meta file
       // TODO: Move this to function or module
