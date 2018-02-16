@@ -1,5 +1,6 @@
 // vim: tabstop=2 shiftwidth=2 expandtab
 
+// npm modules
 const express = require('express');
 const multer  = require('multer');
 // TODO: Get path from config?
@@ -8,9 +9,12 @@ const router = express.Router({ strict: true });
 const crypto = require('crypto');
 const fs = require('fs');
 const basicAuth = require('basic-auth');
-const timeAgo = require('node-time-ago');
+const moment = require('moment');
 const mmm = require('mmmagic'),
       Magic = mmm.Magic;
+
+// local modules
+const helpers = require('../lib/helpers');
 
 const getMetadata = (id, path) => {
   // TODO: Error handling
@@ -62,7 +66,8 @@ router.get('/:paste', (req, res, next) => {
   let options = {
     data: data,
     paste: metadata,
-    postedAt: timeAgo(metadata.timestamp),
+    postedAt: moment(metadata.timestamp).fromNow(),
+    expiresAt: (metadata.expiresAt > 0 ? moment(metadata.expiresAt).fromNow() : null),
     fullTimestamp: new Date(metadata.timestamp).toISOString(),
     generatedTimestamp: new Date().toISOString(),
     domain: config.uri_base,
@@ -152,15 +157,29 @@ router.route('/')
         return res.status(400).send('Wrong file type');
       }
 
-      // Create .meta file
-      // TODO: Move this to function or module
-      fs.writeFileSync(config.path + filename + '.meta', JSON.stringify({
+      const metadata = {
         id: filename,
         timestamp: new Date().getTime(),
         contentType: contentType,
         extension: extension,
         submitter: user.name
-      }));
+      }
+
+      // Should this paste be rendered as plain text without highlighting?
+      // TODO: Consider if this should be an option in the UI instead?
+      if (req.body.plain == 1) {
+        metadata.plain = true;
+      }
+
+      // If provided, set paste age. If not provided, use default age from config.
+      // Age of 0 means no expiration.
+      if (req.body.age) {
+        metadata.expiresAt = helpers.parseAge(req.body.age);
+      }
+
+      // Create .meta file
+      // TODO: Move this to function or module
+      fs.writeFileSync(config.path + filename + '.meta', JSON.stringify(metadata));
 
       // Move uploaded file to its final destination
       fs.renameSync(req.file.path, config.path + filename + '.' + extension);

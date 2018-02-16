@@ -6,10 +6,8 @@ const fs = require('fs');
 const config = require('./config').getConfig();
 
 exports.run = () => {
+  // Delete pastes older than X minutes
   const deleterId = crontab.scheduleJob("* * * * *", () => {
-    // Delete pastes older than X minutes
-    if (config.max_age <= 0) return;
-
     const pastes = fs.readdirSync(config.path);
     const now = new Date().getTime();
     for (let i = 0; i < pastes.length; i++) {
@@ -17,7 +15,10 @@ exports.run = () => {
       if (file.indexOf('.meta') !== -1) {
         const metadata = JSON.parse(fs.readFileSync(config.path + file));
         const diff = (now - (config.max_age * 1000 * 60));
-        if (diff > metadata.timestamp) {
+
+        const aboveGlobalMaxAge = config.max_age > 0 && diff > metadata.timestamp;
+        const expired = metadata.expiresAt < now;
+        if (aboveGlobalMaxAge || expired) {
           // Delete file..
           fs.unlinkSync(config.path + metadata.id + '.meta');
           fs.unlinkSync(config.path + metadata.id + '.' + metadata.extension);

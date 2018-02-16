@@ -12,7 +12,7 @@ block content
     include header.jade
 
     pre
-      code#paste
+      code#paste(class=paste.plain === true ? "nohighlight" : "")
         | #{data}
 
   include footer.jade
