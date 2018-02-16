@@ -17,6 +17,16 @@ a {
   color: #00B7FF;
 }
 
+.hljs-ln-line {
+  line-height: 140%; /* 120% was the default */
+}
+
+.wrapped {
+  white-space: normal;
+  word-wrap: normal;
+  max-width: 100vw;
+}
+
 img.pasted {
   max-width: 100%;
 }

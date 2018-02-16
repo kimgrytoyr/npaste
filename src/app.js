@@ -18,6 +18,7 @@ const env = process.env.NODE_ENV || 'development';
 const getConfig = () => {
   if (fs.existsSync('../data/config.' + env + '.json')) {
     const c = JSON.parse(fs.readFileSync('../data/config.' + env + '.json'));
+    app.locals.version = c.version;
     return c;
   } else {
     throw Error('Unable to read config..');
@@ -48,8 +49,8 @@ const jobId = crontab.scheduleJob("* * * * *", () => {
   }
 });
 
-
 // view engine setup
+app.locals.pretty = true; // Print pretty HTML
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 

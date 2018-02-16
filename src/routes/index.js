@@ -1,7 +1,7 @@
 // vim: tabstop=2 shiftwidth=2 expandtab
 
 const express = require('express');
-const multer  = require('multer')
+const multer  = require('multer');
 // TODO: Get path from config?
 const upload = multer({ dest: '../data/pastes' })
 const router = express.Router({ strict: true });
@@ -126,7 +126,6 @@ router.route('/')
     // Find an unused and unique filename
     var filename;
     while (true) {
-      // TODO: Get filename length from config
       filename = crypto.randomBytes(parseInt(config.filename_length)).toString('hex');
       if (!fs.existsSync(config.path + filename + '.meta')) break;
     }
