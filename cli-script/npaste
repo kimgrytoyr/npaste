@@ -9,6 +9,7 @@ usage() {
     printf "\t-h --help\n"
     printf "\t-p --plaintext No syntax highlighting.\n"
     printf "\t--age When to delete this item. Syntax: n[m|h|d|y], where n is an integer. minutes, hours, days, years. Example: 1h. Default: 0, ie. never deleted.\n"
+    printf "\t--no-auto-pipe Don't use auto pipe command as defined in config file\n"
     printf "\t--config Default: $HOME/.config/npaste/cli.conf\n"
     echo ""
     echo "The supplied file may be a file with or without suffix or simply '-' for STDIN. Default if omitted is STDIN."
@@ -44,6 +45,7 @@ NPASTE_IS_PLAINTEXT=0
 NPASTE_AGE=0
 NPASTE_CONFIG="$HOME/.config/npaste/cli.conf"
 NPASTE_FILE="-" # default stdin
+NPASTE_USE_AUTO_PIPE_COMMAND=1
 
 # override from config if no age has been set
 NPASTE_AGE_HAS_BEEN_SET=0
@@ -67,6 +69,9 @@ while [ "$1" != "" ]; do
         --config)
             NPASTE_CONFIG=$VALUE
             ;;
+        --no-auto-pipe)
+            NPASTE_USE_AUTO_PIPE_COMMAND=0
+            ;;
         *)
             if [ "$1" = "$LAST_ARG" ]; then
                 NPASTE_FILE="$1"
@@ -83,6 +88,7 @@ done
 NPASTE_USERNAME=""
 NPASTE_APIKEY=""
 NPASTE_URL=""
+NPASTE_AUTO_PIPE_COMMAND=""
 # read config file for secrets
 while read -r line || [[ -n $line ]]; do
     PARAM=$(echo $line | awk -F= '{print $1}')
@@ -103,6 +109,10 @@ while read -r line || [[ -n $line ]]; do
                 NPASTE_AGE=$VALUE
             fi
             ;;
+        auto_pipe_command)
+            if [ $NPASTE_USE_AUTO_PIPE_COMMAND -eq 1 ]; then
+                NPASTE_AUTO_PIPE_COMMAND=$VALUE
+            fi
     esac
 done < "$NPASTE_CONFIG"
 
@@ -115,8 +125,9 @@ if [ -z "$NPASTE_USERNAME" ] || [ -z "$NPASTE_APIKEY" ] || [ -z "$NPASTE_URL" ];
     printf "\tapikey=abcd\n"
     printf "\turl=https://paste.example.com/\n"
     printf "\tdefault_age=8h\n"
+    printf "\tauto_pipe_command=xsel -i -b\n"
     echo ""
-    echo "All options are required, except default_age, which is optional."
+    echo "All options are required, except default_age and auto_pipe_command, which are optional."
 
     exit 2
 fi
@@ -126,16 +137,25 @@ NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKE
 
 case "$NPASTE_PASTE_URL" in
     http*)
-        if [ -t 1 ]; then
-            # this is in a terminal, and we'd prefer a newline at the end
+        if [ -t 1 ] && [ -z "$NPASTE_AUTO_PIPE_COMMAND" ]; then
+            # this is in a terminal, and we'd prefer a newline at the end,
+            # and we're not intending to pipe it ourself with an auto pipe command
             NPASTE_TERMINAL_NEWLINE="\n"
         else
             # this is in a pipe, and we'd just like the raw url
             NPASTE_TERMINAL_NEWLINE=""
         fi
 
-        printf "$NPASTE_PASTE_URL$NPASTE_TERMINAL_NEWLINE"
-        exit 0
+        if [ -z "$NPASTE_AUTO_PIPE_COMMAND" ]; then
+            # no auto pipe command. print to stdout
+            printf "$NPASTE_PASTE_URL$NPASTE_TERMINAL_NEWLINE"
+            exit 0
+        else
+            # auto pipe the data to the selected command. exit with the auto pipe's exit code
+            printf "$NPASTE_PASTE_URL" | $NPASTE_AUTO_PIPE_COMMAND
+            exit $?
+        fi
+
         ;;
     *)
         echo "API error: $NPASTE_PASTE_URL"

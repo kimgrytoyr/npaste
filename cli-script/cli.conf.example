@@ -2,3 +2,4 @@ username=johndoe
 apikey=abcd
 url=https://paste.example.com/
 default_age=0
+auto_pipe_command=xsel -i -b
