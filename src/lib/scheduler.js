@@ -20,7 +20,6 @@ exports.run = () => {
         const expired = metadata.expiresAt !== null && metadata.expiresAt < now;
         if (aboveGlobalMaxAge || expired) {
           // Delete file..
-          fs.unlinkSync(config.path + metadata.id + '.meta');
           fs.unlinkSync(config.path + metadata.id + '.' + metadata.extension);
         }
       }

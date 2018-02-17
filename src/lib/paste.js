@@ -174,7 +174,6 @@ const remove = (req, res, next) => {
     return res.status(400).send('This paste has expired and the contents are no longer available.');
   }
 
-  fs.unlinkSync(config.path + req.params.paste + '.meta');
   fs.unlinkSync(config.path + req.params.paste + '.' + paste.metadata.extension);
 
   return res.status(200).send('OK');
