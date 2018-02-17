@@ -21,6 +21,24 @@ ntharg() {
 }
 LAST_ARG=$(ntharg $# "$@")
 
+api_request() {
+    # parameters to this function
+    local NPASTE_username=$1
+    local NPASTE_apikey=$2
+    local NPASTE_url=$3
+    # $n... parameters directly to curl
+
+    # get curl opts
+    local NPASTE_opts=""
+    while [ "$4" != "" ]; do
+        NPASTE_opts="$NPASTE_opts $4"
+        shift
+    done
+
+    curl --basic --user "$NPASTE_username:$NPASTE_apikey" --silent $NPASTE_opts "$NPASTE_url"
+    return $?
+}
+
 # defaults
 NPASTE_IS_PLAINTEXT=0
 NPASTE_AGE=0
@@ -30,7 +48,7 @@ NPASTE_FILE="-" # default stdin
 # override from config if no age has been set
 NPASTE_AGE_HAS_BEEN_SET=0
 
-# get paramteres
+# get parameters
 while [ "$1" != "" ]; do
     PARAM=$(echo $1 | awk -F= '{print $1}')
     VALUE=$(echo $1 | awk -F= '{print $2}')
@@ -103,21 +121,8 @@ if [ -z "$NPASTE_USERNAME" ] || [ -z "$NPASTE_APIKEY" ] || [ -z "$NPASTE_URL" ];
     exit 2
 fi
 
-# convert stdin to file, if applicable
-NPASTE_DELETE_AFTER_REQUEST=0
-if [ "$NPASTE_FILE" = "-" ]; then
-    NPASTE_FILE=$(mktemp)
-    cat > $NPASTE_FILE
-    NPASTE_DELETE_AFTER_REQUEST=1
-fi
-
 # upload file to npaste
-NPASTE_PASTE_URL=$(curl --basic --user "$NPASTE_USERNAME:$NPASTE_APIKEY" -F "paste=@$NPASTE_FILE" -F "plain=$NPASTE_IS_PLAINTEXT" -F "age=$NPASTE_AGE"  --silent "$NPASTE_URL")
-
-# delete temp files
-if [ $NPASTE_DELETE_AFTER_REQUEST -eq 1 ]; then
-    rm $NPASTE_FILE
-fi
+NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE")
 
 case "$NPASTE_PASTE_URL" in
     http*)
