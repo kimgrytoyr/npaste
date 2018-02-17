@@ -9,6 +9,8 @@ usage() {
     printf "\t-h --help\n"
     printf "\t-p --plaintext No syntax highlighting.\n"
     printf "\t--age When to delete this item. Syntax: n[m|h|d|y], where n is an integer. minutes, hours, days, years. Example: 1h. Default: 0, ie. never deleted.\n"
+    printf "\t--archive The paste will be restorable for the submitter with the archive flag.\n"
+    printf "\t--no-archive The paste will NOT be archived, regardless of default defined in config file.\n"
     printf "\t--no-auto-pipe Don't use auto pipe command as defined in config file\n"
     printf "\t--config Default: $HOME/.config/npaste/cli.conf\n"
     echo ""
@@ -46,6 +48,8 @@ NPASTE_AGE=0
 NPASTE_CONFIG="$HOME/.config/npaste/cli.conf"
 NPASTE_FILE="-" # default stdin
 NPASTE_USE_AUTO_PIPE_COMMAND=1
+NPASTE_ARCHIVE=0
+NPASTE_NO_ARCHIVE=0
 
 # override from config if no age has been set
 NPASTE_AGE_HAS_BEEN_SET=0
@@ -65,6 +69,12 @@ while [ "$1" != "" ]; do
         --age)
             NPASTE_AGE=$VALUE
             NPASTE_AGE_HAS_BEEN_SET=1
+            ;;
+        --archive)
+            NPASTE_ARCHIVE=1
+            ;;
+        --no-archive)
+            NPASTE_NO_ARCHIVE=1
             ;;
         --config)
             NPASTE_CONFIG=$VALUE
@@ -89,7 +99,8 @@ NPASTE_USERNAME=""
 NPASTE_APIKEY=""
 NPASTE_URL=""
 NPASTE_AUTO_PIPE_COMMAND=""
-# read config file for secrets
+NPASTE_DEFAULT_ARCHIVE=0
+# read config file
 while read -r line || [[ -n $line ]]; do
     PARAM=$(echo $line | awk -F= '{print $1}')
     VALUE=$(echo $line | awk -F= '{print $2}')
@@ -109,6 +120,9 @@ while read -r line || [[ -n $line ]]; do
                 NPASTE_AGE=$VALUE
             fi
             ;;
+        default_archive)
+            NPASTE_DEFAULT_ARCHIVE=$VALUE
+            ;;
         auto_pipe_command)
             if [ $NPASTE_USE_AUTO_PIPE_COMMAND -eq 1 ]; then
                 NPASTE_AUTO_PIPE_COMMAND=$VALUE
@@ -125,15 +139,25 @@ if [ -z "$NPASTE_USERNAME" ] || [ -z "$NPASTE_APIKEY" ] || [ -z "$NPASTE_URL" ];
     printf "\tapikey=abcd\n"
     printf "\turl=https://paste.example.com/\n"
     printf "\tdefault_age=8h\n"
+    printf "\tdefault_archive=0\n"
     printf "\tauto_pipe_command=xsel -i -b\n"
     echo ""
-    echo "All options are required, except default_age and auto_pipe_command, which are optional."
+    echo "All options are required, except default_age, default_archive and auto_pipe_command, which are optional."
 
     exit 2
 fi
 
+# determine archive status
+NPASTE_DO_ARCHIVE=$NPASTE_DEFAULT_ARCHIVE # follow default as... well, default
+if [ "$NPASTE_ARCHIVE" = "1" ]; then
+    NPASTE_DO_ARCHIVE="1" # archive if asked to
+fi
+if [ "$NPASTE_NO_ARCHIVE" = "1" ]; then
+    NPASTE_DO_ARCHIVE="0" # if asked not to, never archive
+fi
+
 # upload file to npaste
-NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE")
+NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE")
 
 case "$NPASTE_PASTE_URL" in
     http*)
