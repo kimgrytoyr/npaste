@@ -27,6 +27,9 @@ NPASTE_AGE=0
 NPASTE_CONFIG="$HOME/.config/npaste/cli.conf"
 NPASTE_FILE="-" # default stdin
 
+# override from config if no age has been set
+NPASTE_AGE_HAS_BEEN_SET=0
+
 # get paramteres
 while [ "$1" != "" ]; do
     PARAM=$(echo $1 | awk -F= '{print $1}')
@@ -41,6 +44,7 @@ while [ "$1" != "" ]; do
             ;;
         --age)
             NPASTE_AGE=$VALUE
+            NPASTE_AGE_HAS_BEEN_SET=1
             ;;
         --config)
             NPASTE_CONFIG=$VALUE
@@ -75,6 +79,12 @@ while read -r line || [[ -n $line ]]; do
         url)
             NPASTE_URL=$VALUE
             ;;
+        default_age)
+            if [ $NPASTE_AGE_HAS_BEEN_SET -eq 0 ]; then
+                # override age, as no age has been provided at runtime
+                NPASTE_AGE=$VALUE
+            fi
+            ;;
     esac
 done < "$NPASTE_CONFIG"
 
@@ -86,6 +96,9 @@ if [ -z "$NPASTE_USERNAME" ] || [ -z "$NPASTE_APIKEY" ] || [ -z "$NPASTE_URL" ];
     printf "\tusername=johndoe\n"
     printf "\tapikey=abcd\n"
     printf "\turl=https://paste.example.com/\n"
+    printf "\tdefault_age=8h\n"
+    echo ""
+    echo "All options are required, except default_age, which is optional."
 
     exit 2
 fi

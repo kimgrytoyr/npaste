@@ -1,3 +1,4 @@
 username=johndoe
 apikey=abcd
 url=https://paste.example.com/
+default_age=0
