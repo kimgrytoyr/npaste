@@ -8,83 +8,100 @@ const mmm = require('mmmagic'),
 
 // local modules
 const helpers = require('../lib/helpers');
+const config = require('../lib/config').getConfig();
 
-exports.getFormatted = (req, res, next) => {
-  const config = req.app.get('_config');
-  console.log(config.path + req.params.paste + '.meta');
+const getPaste = (pasteId) => {
+  const paste = {
+    metadata: null,
+    data: null,
+    expired: false
+  }
 
-  if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
+  if (!fs.existsSync(config.path + pasteId + '.meta')) {
+    return false;
+  }
+
+  paste.metadata = helpers.getMetadata(pasteId, config.path);
+
+  if (paste.metadata.expiresAt !== null && paste.metadata.expiresAt < new Date().getTime()) {
+    paste.expired = true;
+  }
+
+  if (fs.existsSync(config.path + pasteId + '.' + paste.metadata.extension)) {
+    paste.data = fs.readFileSync(config.path + pasteId + '.' + paste.metadata.extension);
+  }
+
+  return paste;
+}
+
+const getFormatted = (req, res, next) => {
+  const paste = getPaste(req.params.paste);
+  if (paste === false) {
     return res.status(400).send('Paste not found');
   }
 
-  const metadata = helpers.getMetadata(req.params.paste, config.path);
-  if (metadata.expiresAt !== null && metadata.expiresAt < new Date().getTime()) {
-    return res.status(400).send('Paste not found');
+  if (paste.expired || paste.data == null) {
+    return res.status(400).send('This paste has expired and the contents are no longer available.');
   }
-
-  let data = fs.readFileSync(config.path + req.params.paste + '.' + metadata.extension);
 
   // TODO: Cleanup/simplification
   let template = 'text';
   let image = null;
   let options = {
-    data: data,
-    paste: metadata,
-    postedAt: moment(metadata.timestamp).fromNow(),
-    expiresAt: (metadata.expiresAt > 0 ? moment(metadata.expiresAt).fromNow() : null),
-    fullTimestamp: new Date(metadata.timestamp).toISOString(),
+    data: paste.data,
+    paste: paste.metadata,
+    postedAt: moment(paste.metadata.timestamp).fromNow(),
+    expiresAt: (paste.metadata.expiresAt > 0 ? moment(paste.metadata.expiresAt).fromNow() : null),
+    fullTimestamp: new Date(paste.metadata.timestamp).toISOString(),
     generatedTimestamp: new Date().toISOString(),
     domain: config.uri_base,
-    url: config.uri_base + '/' + metadata.id,
-    rawUrl: config.uri_base + '/' + metadata.id + '/',
+    url: config.uri_base + '/' + paste.metadata.id,
+    rawUrl: config.uri_base + '/' + paste.metadata.id + '/',
     version: config.version
   };
 
-  if (typeof metadata.contentType === 'undefined') {
+  if (typeof paste.metadata.contentType === 'undefined') {
     return res.status(500).send('Invalid type');
-  } else if (metadata.contentType != 'text/plain') {
+  } else if (paste.metadata.contentType != 'text/plain') {
     template = 'image';
-    options.data = 'data:' + metadata.contentType + ';base64, ' + new Buffer(data).toString('base64');
+    options.data = 'data:' + paste.metadata.contentType + ';base64, ' + new Buffer(paste.data).toString('base64');
   }
 
   res.render(template, options);
 }
 
-exports.getRaw = (req, res, next) => {
-  const config = req.app.get('_config');
-
-  if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
+const getRaw = (req, res, next) => {
+  const paste = getPaste(req.params.paste);
+  if (paste === false) {
     return res.status(400).send('Paste not found');
   }
 
-  const metadata = helpers.getMetadata(req.params.paste, config.path);
-  if (metadata.expiresAt !== null && metadata.expiresAt < new Date().getTime()) {
-    return res.status(400).send('Paste not found');
+  if (paste.expired || paste.data == null) {
+    return res.status(400).send('This paste has expired and the contents are no longer available.');
   }
 
-  const data = fs.readFileSync(config.path + req.params.paste + '.' + metadata.extension);
-
-  if (typeof metadata.contentType === 'undefined') {
+  if (typeof paste.metadata.contentType === 'undefined') {
     return res.status(500).send('Invalid type');
   }
 
-  return res.end(data, 'binary');
+  return res.end(paste.data, 'binary');
 }
 
-exports.getMeta = (req, res, next) => {
-  const config = req.app.get('_config');
-
-  if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
+const getMeta = (req, res, next) => {
+  const paste = getPaste(req.params.paste);
+  if (paste === false) {
     return res.status(400).send('Paste not found');
   }
 
-  const metadata = helpers.getMetadata(req.params.paste, config.path);
+  if (paste.expired || paste.data == null) {
+    return res.status(400).send('This paste has expired and the contents are no longer available.');
+  }
+
   res.setHeader("Content-Type", "application/json");
-  return res.end(JSON.stringify(metadata));
+  return res.end(JSON.stringify(paste.metadata));
 }
 
-exports.add = (req, res, next) => {
-  const config = req.app.get('_config');
+const add = (req, res, next) => {
   const user = basicAuth(req);
 
   if (!req.file)
@@ -147,16 +164,26 @@ exports.add = (req, res, next) => {
 
 }
 
-exports.delete = (req, res, next) => {
-  const config = req.app.get('_config');
-
-  if (!fs.existsSync(config.path + req.params.paste + '.meta')) {
+const remove = (req, res, next) => {
+  const paste = getPaste(req.params.paste);
+  if (paste === false) {
     return res.status(400).send('Paste not found');
   }
 
-  const metadata = helpers.getMetadata(req.params.paste, config.path);
+  if (paste.expired || paste.data == null) {
+    return res.status(400).send('This paste has expired and the contents are no longer available.');
+  }
+
   fs.unlinkSync(config.path + req.params.paste + '.meta');
-  fs.unlinkSync(config.path + req.params.paste + '.' + metadata.extension);
+  fs.unlinkSync(config.path + req.params.paste + '.' + paste.metadata.extension);
 
   return res.status(200).send('OK');
+}
+
+module.exports = {
+  getFormatted: getFormatted,
+  getRaw: getRaw,
+  getMeta: getMeta,
+  add: add,
+  delete: remove
 }
