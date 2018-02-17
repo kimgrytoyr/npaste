@@ -29,6 +29,10 @@ const getPaste = (pasteId) => {
 
   if (fs.existsSync(config.path + pasteId + '.' + paste.metadata.extension)) {
     paste.data = fs.readFileSync(config.path + pasteId + '.' + paste.metadata.extension);
+  } else {
+    if (fs.existsSync(config.archive_path + pasteId + '.' + paste.metadata.extension)) {
+      paste.archived = true;
+    }
   }
 
   return paste;
@@ -151,6 +155,11 @@ const add = (req, res, next) => {
     // If provided, set paste age. If not provided, use default age from config.
     // Age of 0 means no expiration.
     metadata.expiresAt = req.body.age ? helpers.parseAge(req.body.age) : null;
+
+    // If submitter wants to keep this paste forever, set an archive flag
+    // so that the scheduler will move it to an archive instead of physically
+    // deleting the file
+    metadata.archive = req.body.archive == 1 ? true : false;
 
     // Create .meta file
     // TODO: Move this to function or module

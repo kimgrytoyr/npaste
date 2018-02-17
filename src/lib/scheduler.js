@@ -14,13 +14,24 @@ exports.run = () => {
       const file = pastes[i];
       if (file.indexOf('.meta') !== -1) {
         const metadata = JSON.parse(fs.readFileSync(config.path + file));
+
+        if (!fs.existsSync(config.path + metadata.id + '.' + metadata.extension)) {
+          // File probably archived..
+          continue;
+        }
+
         const diff = (now - (config.max_age * 1000 * 60));
 
         const aboveGlobalMaxAge = config.max_age > 0 && diff > metadata.timestamp;
         const expired = metadata.expiresAt !== null && metadata.expiresAt < now;
         if (aboveGlobalMaxAge || expired) {
-          // Delete file..
-          fs.unlinkSync(config.path + metadata.id + '.' + metadata.extension);
+          if (metadata.archive === true) {
+            // Move file to archive
+            fs.renameSync(config.path + metadata.id + '.' + metadata.extension, config.archive_path + metadata.id + '.' + metadata.extension);
+          } else {
+            // Physically delete file
+            fs.unlinkSync(config.path + metadata.id + '.' + metadata.extension);
+          }
         }
       }
     }

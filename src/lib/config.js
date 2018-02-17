@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 const env = process.env.NODE_ENV || 'development';
-const VERSION = "v0.3.3";
+const VERSION = "v0.3.4";
 
 exports.getConfig = () => {
   const configFolder = process.env.CONFIG_PATH || '../data/';

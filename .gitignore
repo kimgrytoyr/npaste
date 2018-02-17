@@ -1,5 +1,7 @@
 # ignore data dir, except .gitkeep
 data/pastes/*
+data/archive/*
 !data/pastes/.gitkeep
+!data/archive/.gitkeep
 */node_modules
 
