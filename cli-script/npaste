@@ -121,7 +121,15 @@ fi
 
 case "$NPASTE_PASTE_URL" in
     http*)
-        printf "$NPASTE_PASTE_URL"
+        if [ -t 1 ]; then
+            # this is in a terminal, and we'd prefer a newline at the end
+            NPASTE_TERMINAL_NEWLINE="\n"
+        else
+            # this is in a pipe, and we'd just like the raw url
+            NPASTE_TERMINAL_NEWLINE=""
+        fi
+
+        printf "$NPASTE_PASTE_URL$NPASTE_TERMINAL_NEWLINE"
         exit 0
         ;;
     *)
