@@ -29,10 +29,8 @@ const getPaste = (pasteId) => {
 
   if (fs.existsSync(config.path + pasteId + '.' + paste.metadata.extension)) {
     paste.data = fs.readFileSync(config.path + pasteId + '.' + paste.metadata.extension);
-  } else {
-    if (fs.existsSync(config.archive_path + pasteId + '.' + paste.metadata.extension)) {
-      paste.archived = true;
-    }
+  } else if (fs.existsSync(config.archive_path + pasteId + '.' + paste.metadata.extension)) {
+    paste.archived = true;
   }
 
   return paste;
@@ -44,8 +42,12 @@ const getFormatted = (req, res, next) => {
     return res.status(400).send('Paste not found');
   }
 
+  if (paste.archived) {
+    return res.status(400).send('This paste has been archived and is no longer publicly available.');
+  }
+
   if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and the contents are no longer available.');
+    return res.status(400).send('This paste has expired and is no longer available.');
   }
 
   // TODO: Cleanup/simplification
@@ -80,8 +82,12 @@ const getRaw = (req, res, next) => {
     return res.status(400).send('Paste not found');
   }
 
+  if (paste.archived) {
+    return res.status(400).send('This paste has been archived and is no longer publicly available.');
+  }
+
   if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and the contents are no longer available.');
+    return res.status(400).send('This paste has expired and is no longer available.');
   }
 
   if (typeof paste.metadata.contentType === 'undefined') {
@@ -97,8 +103,12 @@ const getMeta = (req, res, next) => {
     return res.status(400).send('Paste not found');
   }
 
+  if (paste.archived) {
+    return res.status(400).send('This paste has been archived and is no longer publicly available.');
+  }
+
   if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and the contents are no longer available.');
+    return res.status(400).send('This paste has expired and is no longer available.');
   }
 
   res.setHeader("Content-Type", "application/json");
