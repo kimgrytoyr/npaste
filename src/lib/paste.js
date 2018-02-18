@@ -147,7 +147,7 @@ const add = (req, res, next) => {
     }
 
     if (extension == null) {
-      return res.status(400).send('Wrong file type');
+      return res.status(400).send('Wrong file type: ' + type);
     }
 
     const metadata = {
