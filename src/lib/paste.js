@@ -142,6 +142,8 @@ const add = (req, res, next) => {
       extension = 'txt';
     } else if (type == 'image/jpg') {
       extension = 'jpg';
+    } else if (type == 'image/jpeg') {
+      extension = 'jpg';
     } else if (type == 'image/png') {
       extension = 'png';
     }
