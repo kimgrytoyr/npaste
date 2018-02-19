@@ -1,0 +1,51 @@
+# uri_base: The full URL to the server running npaste. Do not use a trailing slash.
+uri_base: http://localhost:3000
+
+# filename_length: How many letters and digits should the paste ID be.
+filename_length: 8
+
+# path: The full path to the 'pastes' directory. If you're using the Docker version
+#       you can keep the default value.
+path: /home/node/app/data/pastes/
+
+# archive_path: The full path to the 'archive' directory. If you're using the Docker version
+#               you can keep the default value.
+archive_path: /home/node/app/data/archive/
+
+# max_age: Enforce a global max age for all pastes. Will delete or archive a paste when
+#          it has reached the max age. Use n[y|d|h|m|s] where n is a positive number.
+max_age: 0
+
+# default_age: When the parser fails to recognize the provided "age" parameter, use this value.
+#              Use n[y|d|h|m|s] where n is a positive number.
+default_age: 0
+
+# mime_types: npaste will allow pastes with the following mime types. The options within each
+#             block allows you to specify the type (text or image) and the mime type and
+#             extension. The mime type will be used when serving the paste in raw format.
+#             The actual files that are saved to disk will use the provided extension.
+mime_types:
+    text/plain:
+        type: text
+        mime_type: text/plain
+        extension: txt
+
+    application/json: 
+      type: text
+      mime_type: application/json
+      extension: txt
+
+    image/png: 
+      type: image
+      mime_type: image/png
+      extension: png
+
+    image/jpg: 
+      type: image
+      mime_type: image/jpg
+      extension: jpg
+
+    image/jpeg: 
+      type: image
+      mime_type: image/jpeg
+      extension: jpg

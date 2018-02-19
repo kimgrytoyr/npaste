@@ -1,0 +1,32 @@
+uri_base: https://paste.grytoyr.io
+filename_length: 8
+path: /home/node/app/data/pastes/
+archive_path: /home/node/app/data/archive/
+max_age: 0
+default_age: 0
+mime_types:
+    text/plain:
+        type: text
+        mime_type: text/plain
+        extension: txt
+
+    application/json: 
+      type: text
+      mime_type: application/json
+      extension: txt
+
+    image/png: 
+      type: image
+      mime_type: image/png
+      extension: png
+
+    image/jpg: 
+      type: image
+      mime_type: image/jpg
+      extension: jpg
+
+    image/jpeg: 
+      type: image
+      mime_type: image/jpeg
+      extension: jpg
+
