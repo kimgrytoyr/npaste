@@ -149,7 +149,8 @@ const add = (req, res, next) => {
     }
 
     if (extension == null) {
-      return res.status(400).send('Wrong file type: ' + type);
+      fs.unlinkSync(req.file.path);
+      return res.status(400).send('MIME type not allowed: ' + type);
     }
 
     const metadata = {
