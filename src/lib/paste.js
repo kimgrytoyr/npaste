@@ -137,7 +137,7 @@ const add = (req, res, next) => {
     if (err) throw err;
     let type = result.split(';')[0];
 
-    if (type.split('/')[0] == 'text') {
+    if (type.split('/')[0] == 'text' || config.allowed_mime_types.indexOf(type)) {
       type = 'text/plain';
       extension = 'txt';
     } else if (type == 'image/jpg') {

@@ -16,6 +16,7 @@ const helpers = require('./lib/helpers');
 
 // routes
 const index = require('./routes/index');
+const stats = require('./routes/stats');
 
 const app = express();
 app.disable('x-powered-by'); // dont show this header
@@ -35,6 +36,7 @@ app.use(bodyParser.urlencoded({ extended: false, limit: '5mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/stats', stats);
 app.use('/', index);
 
 // catch 404 and forward to error handler

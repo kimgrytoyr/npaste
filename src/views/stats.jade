@@ -1,0 +1,17 @@
+extends layout
+
+block content
+  - var plural_active = (stats.count.active == 1 ? '' : 's')
+  - var plural_archived = (stats.count.archived == 1 ? '' : 's')
+  - var plural_expired = (stats.count.expired == 1 ? '' : 's')
+
+  #content
+    h1= title
+    p.
+      keeping track of #{stats.count.active} active paste#{plural_active} with a size of #{stats.size.active} bytes.
+    p.
+      keeping track of #{stats.count.archived} archived paste#{plural_archived} with a size of #{stats.size.archived} bytes.
+    p.
+      #{stats.count.expired} paste#{plural_expired} has expired and does no longer exist.
+  include footer.jade
+
