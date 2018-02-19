@@ -66,13 +66,20 @@ const getFormatted = (req, res, next) => {
     version: config.version
   };
 
-  if (typeof paste.metadata.contentType === 'undefined') {
+  // Do not show pastes have a currently invalid mime type
+  if (helpers.validateMimeType(paste) === false) {
     return res.status(500).send('Invalid type');
-  } else if (paste.metadata.contentType != 'text/plain') {
-    template = 'image';
-    options.data = 'data:' + paste.metadata.contentType + ';base64, ' + new Buffer(paste.data).toString('base64');
   }
 
+  if (paste.metadata.type == 'text' || paste.metadata.contentType.split('/')[0] == 'text') {
+    // We're good..
+  } else if (paste.metadata.type == "image" || paste.metadata.contentType.split('/')[0] == 'image') {
+    template = 'image';
+    options.data = 'data:' + paste.metadata.contentType + ';base64, ' + new Buffer(paste.data).toString('base64');
+  } else {
+    return res.status(500).send('Invalid type');
+  }
+  
   res.render(template, options);
 }
 
@@ -89,8 +96,8 @@ const getRaw = (req, res, next) => {
   if (paste.expired || paste.data == null) {
     return res.status(400).send('This paste has expired and is no longer available.');
   }
-
-  if (typeof paste.metadata.contentType === 'undefined') {
+  // Do not show pastes have a currently invalid mime type
+  if (helpers.validateMimeType(paste) === false || typeof paste.metadata.contentType === 'undefined') {
     return res.status(500).send('Invalid type');
   }
 
@@ -137,15 +144,9 @@ const add = (req, res, next) => {
     if (err) throw err;
     let type = result.split(';')[0];
 
-    if (type.split('/')[0] == 'text' || config.allowed_mime_types.indexOf(type)) {
-      type = 'text/plain';
-      extension = 'txt';
-    } else if (type == 'image/jpg') {
-      extension = 'jpg';
-    } else if (type == 'image/jpeg') {
-      extension = 'jpg';
-    } else if (type == 'image/png') {
-      extension = 'png';
+    if (config.mime_types[type]) {
+      contentType = config.mime_types[type].mime_type;
+      extension = config.mime_types[type].extension;
     }
 
     if (extension == null) {
@@ -156,7 +157,8 @@ const add = (req, res, next) => {
     const metadata = {
       id: filename,
       timestamp: new Date().getTime(),
-      contentType: type,
+      type: config.mime_types[type].type,
+      contentType: contentType,
       extension: extension,
       submitter: user.name
     }

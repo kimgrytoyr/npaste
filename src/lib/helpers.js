@@ -5,11 +5,16 @@ const fs = require('fs');
 const config = require('./config').getConfig();
 
 
-
 // Get metadata for a paste
 exports.getMetadata = (id, path) => {
   // TODO: Error handling
   return JSON.parse(fs.readFileSync(path + id + '.meta'));
+}
+
+exports.validateMimeType = (paste) => {
+  if (typeof config.mime_types[paste.metadata.contentType] === 'undefined') return false;
+
+  return true;
 }
 
 
