@@ -12,6 +12,7 @@
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.15.5",
+    "filesize": "^3.6.0",
     "jade": "~1.11.0",
     "mmmagic": "^0.4.6",
     "moment": "^2.20.1",

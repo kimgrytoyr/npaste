@@ -5,6 +5,7 @@ body {
 
 h1 {
   font-size: 120%;
+  word-wrap: break-word;
 }
 
 @media(max-width: 1024px) {

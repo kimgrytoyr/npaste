@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router({ strict: true });
 const fs = require('fs');
 const config = require('../lib/config').getConfig(); // local
+const filesize = require('filesize');
 
 // local modules
 const auth = require('../lib/auth');
@@ -49,7 +50,11 @@ router.get('/', (req, res, next) => {
   }
 
   stats.count.expired = stats.count.metadata - (stats.count.active + stats.count.archived);
-  stats.size.total = stats.size.metadata + stats.size.active + stats.size.archived;
+
+  stats.size.total = filesize(stats.size.metadata + stats.size.active + stats.size.archived);
+  stats.size.metadata = filesize(stats.size.metadata);
+  stats.size.active = filesize(stats.size.active);
+  stats.size.archived = filesize(stats.size.archived);
 
   res.render('stats', {
     title: 'npaste stats',
