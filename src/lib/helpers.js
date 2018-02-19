@@ -32,8 +32,9 @@ exports.parseAge = (age) => {
 
   if (age <= 0) return null;
 
-  const now = new Date().getTime();
-  let expiration = now;
+  let expiration = new Date().getTime();
+
+  // TODO: Handle unknown units
   switch (unit) {
     case 'y':
       expiration += (age * (365 * 24 * 60 * 60)) * 1000;
