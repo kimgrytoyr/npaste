@@ -3,9 +3,9 @@ p.metadata
   | pasted #[span(title="#{fullTimestamp}") #{postedAt}] by #{paste.submitter}.
   if expiresAt
     if paste.archive
-      |  will be archived #{expiresAt}
+      |  will be archived #[span(title="#{fullExpiresAtTimestamp}") #{expiresAt}]
     if !paste.archive
-      |  expires #{expiresAt}
+      |  expires #[span(title="#{fullExpiresAtTimestamp}") #{expiresAt}]
   |  | #[a(href="#{rawUrl}") view raw]
   if paste.contentType == "text/plain"
     |  | #[a#toggleWrapping(href="#") toggle wrapping]

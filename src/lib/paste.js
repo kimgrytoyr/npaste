@@ -61,6 +61,7 @@ const getFormatted = (req, res, next) => {
     postedAt: moment(paste.metadata.timestamp).fromNow(),
     expiresAt: (paste.metadata.expiresAt > 0 ? moment(paste.metadata.expiresAt).fromNow() : null),
     fullTimestamp: new Date(paste.metadata.timestamp).toISOString(),
+    fullExpiresAtTimestamp: (paste.metadata.expiresAt > 0 ? new Date(paste.metadata.expiresAt).toISOString() : null),
     generatedTimestamp: new Date().toISOString(),
     domain: config.uri_base,
     url: config.uri_base + '/' + paste.metadata.id,
