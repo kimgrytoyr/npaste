@@ -1,7 +1,6 @@
 # TODO
 - Refactor code. Move stuff to modules etc (WIP)
 - Create script to create authentication token and add to data/tokens.json
-- Create bash script to paste text or image
 
 # DONE
 - POST to / should add a new text paste
@@ -15,6 +14,7 @@
 - Add basic syntax highlighting
 - Implement plain text flag when pasting text to ensure correct syntax highlighting
 - Implement "age" field when pasting. This allows pastes to automatically expire at a certain age.
+- Create bash script to paste text or image
 
 # WONTFIX
 - Add boolean config "real_delete". If set to false, pastes will be archived instead of deleted when they expire.
