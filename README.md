@@ -85,3 +85,5 @@ Stop and remove the container: `docker stop npaste_1 && docker rm npaste_1`
 
 After the commands above are done, issue the run command (`docker run etc...`) as described in `Install in production`.
 
+## Discussion and feedback
+If you have any questions, feedback or patches, use the [mailing list](mailto:npaste@lists.grytoyr.io).
