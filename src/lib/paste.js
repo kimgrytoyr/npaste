@@ -28,8 +28,10 @@ const getPaste = (pasteId) => {
   }
 
   if (fs.existsSync(config.path + pasteId + '.' + paste.metadata.extension)) {
-    paste.data = fs.readFileSync(config.path + pasteId + '.' + paste.metadata.extension);
+    paste.path = config.path + pasteId + '.' + paste.metadata.extension;
+    paste.data = fs.readFileSync(paste.path);
   } else if (fs.existsSync(config.archive_path + pasteId + '.' + paste.metadata.extension)) {
+    paste.path = config.archive_path + pasteId + '.' + paste.metadata.extension;
     paste.archived = true;
   }
 
@@ -194,11 +196,7 @@ const remove = (req, res, next) => {
     return res.status(400).send('Paste not found');
   }
 
-  if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and the contents are no longer available.');
-  }
-
-  fs.unlinkSync(config.path + req.params.paste + '.' + paste.metadata.extension);
+  fs.unlinkSync(paste.path);
 
   return res.status(200).send('OK');
 }
