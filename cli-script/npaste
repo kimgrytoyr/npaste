@@ -219,6 +219,7 @@ case "$NPASTE_PASTE_URL" in
         else
             # auto pipe the data to the selected command. exit with the auto pipe's exit code
             printf "$NPASTE_PASTE_URL$NPASTE_URL_KEY" | $NPASTE_AUTO_PIPE_COMMAND
+            printf "$NPASTE_PASTE_URL$NPASTE_TERMINAL_NEWLINE$NPASTE_URL_KEY$NPASTE_TERMINAL_NEWLINE"
             exit $?
         fi
 
