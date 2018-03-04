@@ -2,6 +2,8 @@ extends layout
 
 block head
   script(src='/javascripts/highlight.pack.js')
+  if paste.encrypted === true
+    script(src='/javascripts/openpgp.min.js')
   script(src='/javascripts/highlightjs-line-numbers.min.js')
   script(src='/javascripts/syntax.js')
   link(rel='stylesheet', href='/stylesheets/gruvbox-dark.css')

@@ -78,7 +78,9 @@ const getFormatted = (req, res, next) => {
     // We're good..
   } else if (paste.metadata.type == "image" || paste.metadata.contentType.split('/')[0] == 'image') {
     template = 'image';
-    options.data = 'data:' + paste.metadata.contentType + ';base64, ' + new Buffer(paste.data).toString('base64');
+    if (!paste.metadata.encrypted) {
+      options.data = 'data:' + paste.metadata.contentType + ';base64, ' + new Buffer(paste.data).toString('base64');
+    }
   } else {
     return res.status(500).send('Invalid type');
   }
@@ -147,6 +149,10 @@ const add = (req, res, next) => {
     if (err) throw err;
     let type = result.split(';')[0];
 
+    if (req.body.mimetype) {
+      type = req.body.mimetype;
+    }
+
     if (config.mime_types[type]) {
       contentType = config.mime_types[type].mime_type;
       extension = config.mime_types[type].extension;
@@ -163,7 +169,8 @@ const add = (req, res, next) => {
       type: config.mime_types[type].type,
       contentType: contentType,
       extension: extension,
-      submitter: user.name
+      submitter: user.name,
+      encrypted: req.body.encrypted == 1 ? true : false,
     }
 
     // Should this paste be rendered as plain text without highlighting?

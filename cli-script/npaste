@@ -70,6 +70,9 @@ while [ "$1" != "" ]; do
             NPASTE_AGE=$VALUE
             NPASTE_AGE_HAS_BEEN_SET=1
             ;;
+        --encrypt)
+            NPASTE_ENCRYPT=1
+            ;;
         --archive)
             NPASTE_ARCHIVE=1
             ;;
@@ -100,6 +103,7 @@ NPASTE_APIKEY=""
 NPASTE_URL=""
 NPASTE_AUTO_PIPE_COMMAND=""
 NPASTE_DEFAULT_ARCHIVE=0
+NPASTE_DEFAULT_ENCRYPT=0
 # read config file
 while read -r line || [[ -n $line ]]; do
     PARAM=$(echo $line | awk -F= '{print $1}')
@@ -122,6 +126,9 @@ while read -r line || [[ -n $line ]]; do
             ;;
         default_archive)
             NPASTE_DEFAULT_ARCHIVE=$VALUE
+            ;;
+        default_encrypt)
+            NPASTE_DEFAULT_ENCRYPT=$VALUE
             ;;
         auto_pipe_command)
             if [ $NPASTE_USE_AUTO_PIPE_COMMAND -eq 1 ]; then
@@ -156,8 +163,32 @@ if [ "$NPASTE_NO_ARCHIVE" = "1" ]; then
     NPASTE_DO_ARCHIVE="0" # if asked not to, never archive
 fi
 
-# upload file to npaste
-NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE")
+# determine if we need to encrypt file
+NPASTE_DO_ENCRYPT=$NPASTE_DEFAULT_ENCRYPT # default value
+if [ "$NPASTE_ENCRYPT" = "1" ]; then
+    NPASTE_DO_ENCRYPT="1" # encrypt if asked to
+fi
+
+# create temporary file to determine mime type
+# TODO: Better solution?
+if [ "$NPASTE_FILE" = "-" ]; then
+    MIME_TYPE="text/plain"
+else
+    MIME_TMP=$(mktemp)
+    cat $NPASTE_FILE > $MIME_TMP
+    MIME_TYPE=$(file -b --mime-type "$MIME_TMP")
+    rm $MIME_TMP
+fi
+
+if [ "$NPASTE_DO_ENCRYPT" = "1" ]; then
+    # encrypt file
+    KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
+    # upload file to npaste
+    NPASTE_PASTE_URL=$(cat $NPASTE_FILE | gpg --armor --batch --passphrase "$KEY" --symmetric | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F mimetype=$MIME_TYPE" "-F encrypted=1")
+else
+    NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F encrypted=0")
+fi
 
 case "$NPASTE_PASTE_URL" in
     http*)
@@ -170,13 +201,20 @@ case "$NPASTE_PASTE_URL" in
             NPASTE_TERMINAL_NEWLINE=""
         fi
 
+        if [ "$NPASTE_DO_ENCRYPT" = "1" ]; then
+            # we've encrypted the file. add key to url
+            NPASTE_URL_KEY="#$KEY"
+        else
+            NPASTE_URL_KEY=""
+        fi
+
         if [ -z "$NPASTE_AUTO_PIPE_COMMAND" ]; then
             # no auto pipe command. print to stdout
-            printf "$NPASTE_PASTE_URL$NPASTE_TERMINAL_NEWLINE"
+            printf "$NPASTE_PASTE_URL$NPASTE_TERMINAL_NEWLINE$NPASTE_URL_KEY"
             exit 0
         else
             # auto pipe the data to the selected command. exit with the auto pipe's exit code
-            printf "$NPASTE_PASTE_URL" | $NPASTE_AUTO_PIPE_COMMAND
+            printf "$NPASTE_PASTE_URL$NPASTE_URL_KEY" | $NPASTE_AUTO_PIPE_COMMAND
             exit $?
         fi
 

@@ -8,6 +8,10 @@ h1 {
   word-wrap: break-word;
 }
 
+#data {
+  display: none;
+}
+
 @media(max-width: 1024px) {
   h1 {
     font-size: 100%;
@@ -38,6 +42,15 @@ p.metadata {
 
 p.metadata span {
   text-decoration: underline;
+}
+
+#error {
+  color: red;
+  display: none;
+}
+
+#paste {
+  display: none;
 }
 
 p.footer {

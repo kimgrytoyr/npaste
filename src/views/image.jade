@@ -1,10 +1,21 @@
 extends layout
 
+block head
+  if paste.encrypted === true
+    script(src='/javascripts/openpgp.min.js')
+    script(src='/javascripts/decrypt.js')
+
 block content
   #content
     include header.jade
 
-    p.
-      #[a(href="#{rawUrl}") #[img.pasted(src="#{data}")]]
+    if paste.encrypted === true
+      div#data #{data}
+      p.
+        #[a(href="#{rawUrl}") #[img#image.pasted(src="")]]
+    
+    if paste.encrypted === false
+      p.
+        #[a(href="#{rawUrl}") #[img#image.pasted(src="#{data}")]]
 
   include footer.jade

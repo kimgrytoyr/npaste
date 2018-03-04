@@ -46,12 +46,36 @@ const toggleWrapping = (e) => {
 }
 
 ready(() => {
-  const block = document.getElementById('paste');
-  hljs.highlightBlock(block);
-  hljs.lineNumbersBlock(block);
-
   const toggleWrappingLink = document.getElementById('toggleWrapping');
   if (toggleWrappingLink) {
     toggleWrappingLink.addEventListener('click', toggleWrapping);
+  }
+
+  // Encryption stuff
+  if (window.location.hash) {
+    const openpgp = window.openpgp;
+    openpgp.initWorker({ path:'/javascripts/openpgp.worker.min.js' });
+
+    console.log("Something is encrypted..");
+    console.log("Decrypting text..");
+    const data = document.getElementById('paste').innerHTML;
+    options = {
+      message: openpgp.message.readArmored(data),
+      password: window.location.hash.substr(1),
+    };
+
+    openpgp.decrypt(options).then(function(plaintext) {
+      document.getElementById('paste').innerHTML = plaintext.data;
+      console.log(plaintext.data);
+      const block = document.getElementById('paste');
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+      block.style.display = 'block';
+    });
+  } else {
+      const block = document.getElementById('paste');
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+      block.style.display = 'block';
   }
 });
