@@ -17,4 +17,7 @@ block content
       code#paste(class=paste.plain === true ? "nohighlight" : "")
         | #{data}
 
+    if paste.encrypted === true
+      p#decrypting Decrypting paste..
+
   include footer.jade

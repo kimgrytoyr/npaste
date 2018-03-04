@@ -58,10 +58,19 @@ ready(() => {
 
     console.log("Decrypting text..");
     const data = document.getElementById('paste').innerHTML;
-    options = {
-      message: openpgp.message.readArmored(data),
-      password: window.location.hash.substr(1),
-    };
+    try {
+      options = {
+        message: openpgp.message.readArmored(data),
+        password: window.location.hash.substr(1),
+      };
+    }
+    catch (e) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.innerHTML = 'Unable to decrypt message. The original content has probably been tampered with.';
+      errorDiv.style.display = 'block';
+      document.getElementById('decrypting').style.display = 'none';
+      return;
+    }
 
     openpgp.decrypt(options).then(function(plaintext) {
       document.getElementById('paste').innerHTML = plaintext.data;
@@ -69,10 +78,12 @@ ready(() => {
       hljs.highlightBlock(block);
       hljs.lineNumbersBlock(block);
       block.style.display = 'block';
+      document.getElementById('decrypting').style.display = 'none';
     }).catch(function(error) {
       const errorDiv = document.getElementById('error');
-      errorDiv.innerHTML = 'Unable to decrypt message.';
+      errorDiv.innerHTML = 'Unable to decrypt message. You probably have the wrong decryption key.';
       errorDiv.style.display = 'block';
+      document.getElementById('decrypting').style.display = 'none';
     });
   } else {
       const block = document.getElementById('paste');

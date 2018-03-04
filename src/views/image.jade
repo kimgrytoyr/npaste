@@ -13,7 +13,9 @@ block content
       div#data #{data}
       p.
         #[a(href="#{rawUrl}") #[img#image.pasted(src="")]]
-    
+
+      p#decrypting Decrypting paste..
+
     if paste.encrypted === false
       p.
         #[a(href="#{rawUrl}") #[img#image.pasted(src="#{data}")]]
