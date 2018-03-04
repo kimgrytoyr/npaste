@@ -1,4 +1,8 @@
-h1 #{paste.id}
+if paste.encrypted === true
+  h1 #{paste.id} (encrypted)
+if paste.encrypted === false
+  h1 #{paste.id}
+
 p.metadata
   | pasted #[span(title="#{fullTimestamp}") #{postedAt}] by #{paste.submitter}.
   if expiresAt

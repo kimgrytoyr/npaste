@@ -56,7 +56,6 @@ ready(() => {
     const openpgp = window.openpgp;
     openpgp.initWorker({ path:'/javascripts/openpgp.worker.min.js' });
 
-    console.log("Something is encrypted..");
     console.log("Decrypting text..");
     const data = document.getElementById('paste').innerHTML;
     options = {
@@ -66,11 +65,14 @@ ready(() => {
 
     openpgp.decrypt(options).then(function(plaintext) {
       document.getElementById('paste').innerHTML = plaintext.data;
-      console.log(plaintext.data);
       const block = document.getElementById('paste');
       hljs.highlightBlock(block);
       hljs.lineNumbersBlock(block);
       block.style.display = 'block';
+    }).catch(function(error) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.innerHTML = 'Unable to decrypt message.';
+      errorDiv.style.display = 'block';
     });
   } else {
       const block = document.getElementById('paste');
