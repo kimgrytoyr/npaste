@@ -104,6 +104,7 @@ NPASTE_URL=""
 NPASTE_AUTO_PIPE_COMMAND=""
 NPASTE_DEFAULT_ARCHIVE=0
 NPASTE_DEFAULT_ENCRYPT=0
+NPASTE_ENCRYPTION_KEY_LENGTH=16
 # read config file
 while read -r line || [[ -n $line ]]; do
     PARAM=$(echo $line | awk -F= '{print $1}')
@@ -129,6 +130,9 @@ while read -r line || [[ -n $line ]]; do
             ;;
         default_encrypt)
             NPASTE_DEFAULT_ENCRYPT=$VALUE
+            ;;
+        encryption_key_length)
+            NPASTE_ENCRYPTION_KEY_LENGTH=$VALUE
             ;;
         auto_pipe_command)
             if [ $NPASTE_USE_AUTO_PIPE_COMMAND -eq 1 ]; then
@@ -182,7 +186,7 @@ fi
 
 if [ "$NPASTE_DO_ENCRYPT" = "1" ]; then
     # encrypt file
-    KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+    KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w $NPASTE_ENCRYPTION_KEY_LENGTH | head -n 1)
 
     # upload file to npaste
     NPASTE_PASTE_URL=$(cat $NPASTE_FILE | gpg --armor --batch --passphrase "$KEY" --symmetric | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F mimetype=$MIME_TYPE" "-F encrypted=1")

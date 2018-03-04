@@ -4,4 +4,5 @@ url=https://paste.example.com/
 default_age=0
 default_archive=0
 default_encrypt=0
+encryption_key_length=16
 auto_pipe_command=xsel -i -b
