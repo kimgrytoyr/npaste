@@ -73,7 +73,7 @@ ready(() => {
     }
 
     openpgp.decrypt(options).then(function(plaintext) {
-      document.getElementById('paste').innerHTML = plaintext.data;
+      document.getElementById('paste').innerHTML = atob(plaintext.data);
       const block = document.getElementById('paste');
       hljs.highlightBlock(block);
       hljs.lineNumbersBlock(block);

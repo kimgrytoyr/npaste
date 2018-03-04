@@ -31,7 +31,7 @@ ready(() => {
     }
 
     openpgp.decrypt(options).then(function(plaintext) {
-      const src = 'data:image/jpeg;base64, ' + window.btoa(plaintext.data);
+      const src = 'data:image/jpeg;base64, ' + plaintext.data;
       document.getElementById('image').src = src;
       document.getElementById('decrypting').style.display = 'none';
     }).catch(function(error) {
