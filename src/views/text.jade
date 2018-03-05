@@ -8,7 +8,9 @@ block head
   script(src='/javascripts/syntax.js')
   link(rel='stylesheet', href='/stylesheets/gruvbox-dark.css')
   link(rel='stylesheet', href='/stylesheets/line-numbers.css')
-
+  if paste.vault
+    script.
+      window.vault = '#{paste.vault}';
 block content
   #content
     include header.jade

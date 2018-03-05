@@ -9,6 +9,8 @@ usage() {
     printf "\t-h --help\n"
     printf "\t-p --plaintext No syntax highlighting.\n"
     printf "\t--age When to delete this item. Syntax: n[m|h|d|y], where n is an integer. minutes, hours, days, years. Example: 1h. Default: 0, ie. never deleted.\n"
+    printf "\t--encrypt The paste will be encrypted using a secret key not known to the server.\n"
+    printf "\t--vault If using --encrypt, this will also encrypt it with a password that is not in the URL.\n"
     printf "\t--archive The paste will be restorable for the submitter with the archive flag.\n"
     printf "\t--no-archive The paste will NOT be archived, regardless of default defined in config file.\n"
     printf "\t--no-auto-pipe Don't use auto pipe command as defined in config file\n"
@@ -46,6 +48,7 @@ api_request() {
 NPASTE_IS_PLAINTEXT=0
 NPASTE_AGE=0
 NPASTE_CONFIG="$HOME/.config/npaste/cli.conf"
+NPASTE_VAULTS="$HOME/.config/npaste/vaults"
 NPASTE_FILE="-" # default stdin
 NPASTE_USE_AUTO_PIPE_COMMAND=1
 NPASTE_ARCHIVE=0
@@ -72,6 +75,9 @@ while [ "$1" != "" ]; do
             ;;
         --encrypt)
             NPASTE_ENCRYPT=1
+            ;;
+        --vault)
+            NPASTE_VAULT=$VALUE
             ;;
         --archive)
             NPASTE_ARCHIVE=1
@@ -185,11 +191,24 @@ else
 fi
 
 if [ "$NPASTE_DO_ENCRYPT" = "1" ]; then
-    # encrypt file
+    NPASTE_VAULT_KEY=""
+    if [ "$NPASTE_VAULT" ]; then
+        while IFS=':' read -ra VAULTS; do
+            if [ "${VAULTS[0]}" = "$NPASTE_VAULT" ]; then
+                NPASTE_VAULT_KEY="${VAULTS[1]}"
+            fi
+        done <<< $(cat $NPASTE_VAULTS)
+        if [ -z "$NPASTE_VAULT_KEY" ]; then
+            echo "Unable to find vault key for $NPASTE_VAULT"
+            exit
+        fi
+    fi
+
+    # create random encryption key
     KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w $NPASTE_ENCRYPTION_KEY_LENGTH | head -n 1)
 
     # upload file to npaste
-    NPASTE_PASTE_URL=$(cat $NPASTE_FILE | base64 | gpg --armor --batch --passphrase "$KEY" --symmetric | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F mimetype=$MIME_TYPE" "-F encrypted=1")
+    NPASTE_PASTE_URL=$(cat $NPASTE_FILE | base64 | gpg --armor --batch --passphrase "$KEY$NPASTE_VAULT_KEY" --symmetric | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F mimetype=$MIME_TYPE" "-F encrypted=1" "-F vault=$NPASTE_VAULT")
 else
     NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F encrypted=0")
 fi

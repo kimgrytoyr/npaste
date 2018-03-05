@@ -4,7 +4,9 @@ block head
   if paste.encrypted === true
     script(src='/javascripts/openpgp.min.js')
     script(src='/javascripts/decrypt.js')
-
+  if paste.vault
+    script.
+      window.vault = '#{paste.vault}';
 block content
   #content
     include header.jade

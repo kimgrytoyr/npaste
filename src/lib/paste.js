@@ -186,6 +186,10 @@ const add = (req, res, next) => {
     // deleting the file
     metadata.archive = req.body.archive == 1 ? true : false;
 
+    if (req.body.vault) {
+      metadata.vault = req.body.vault;
+    }
+
     // Create .meta file
     // TODO: Move this to function or module
     fs.writeFileSync(config.path + filename + '.meta', JSON.stringify(metadata));
