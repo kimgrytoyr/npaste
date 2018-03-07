@@ -5,6 +5,13 @@
 #
 #########################################################
 
+
+## Get correct group name
+case "$(uname -s)" in
+    Darwin*)    GROUPNAME=staff;;
+    *)          GROUPNAME="$SUDO_USER";;
+esac
+
 if [ -z "$TAG" ]; then
 	TAG=v0.6
 fi
