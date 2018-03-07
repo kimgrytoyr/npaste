@@ -205,7 +205,7 @@ if [ "$NPASTE_DO_ENCRYPT" = "1" ]; then
     fi
 
     # create random encryption key
-    KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w $NPASTE_ENCRYPTION_KEY_LENGTH | head -n 1)
+    KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $NPASTE_ENCRYPTION_KEY_LENGTH | head -n 1)
 
     # upload file to npaste
     NPASTE_PASTE_URL=$(cat $NPASTE_FILE | base64 | gpg --armor --batch --passphrase "$KEY$NPASTE_VAULT_KEY" --symmetric | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F mimetype=$MIME_TYPE" "-F encrypted=1" "-F vault=$NPASTE_VAULT")
