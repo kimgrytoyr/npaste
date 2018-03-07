@@ -17,14 +17,22 @@ if [ -z "$TAG" ]; then
 fi
 
 if [ -z "$CFG_DIR"  ]; then
-    echo "You must specify the CFG_DIR environment variable"
+    CFG_DIR=$HOME/.config/npaste
+fi
+
+if [ -z "$INSTALL_DIR"  ]; then
+    INSTALL_DIR=$HOME/bin
+fi
+
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo "INSTALL_DIR not found. You need to create it first ($INSTALL_DIR)"
     exit
 fi
 
 if [ ! -d "$CFG_DIR" ]; then
     echo "Creating $CFG_DIR ..."
     mkdir -p "$CFG_DIR"
-    chown $SUDO_USER:$SUDO_USER "$CFG_DIR"
+    chown $SUDO_USER:$GROUPNAME "$CFG_DIR"
 else
     echo "$CFG_DIR already exists ..."
 fi
@@ -32,7 +40,7 @@ fi
 if [ ! -f "$CFG_DIR/cli.conf" ]; then
     echo "Creating config file ..."
     curl -s -o "$CFG_DIR/cli.conf" "https://git.grytoyr.io/npaste/plain/cli-script/cli.conf.example?h=$TAG"
-    chown $SUDO_USER:$SUDO_USER "$CFG_DIR/cli.conf"
+    chown $SUDO_USER:$GROUPNAME "$CFG_DIR/cli.conf"
 else
     echo "Config file already exists ..."
 fi
@@ -40,14 +48,14 @@ fi
 if [ ! -f "$CFG_DIR/vaults" ]; then
     echo "Creating vaults file ..."
     touch "$CFG_DIR/vaults"
-    chown $SUDO_USER:$SUDO_USER "$CFG_DIR/vaults"
+    chown $SUDO_USER:$GROUPNAME "$CFG_DIR/vaults"
 else
     echo "Vaults file already exists ..."
 fi
 
 echo "Downloading npaste script $TAG ..."
-curl -s -o /usr/local/bin/npaste "https://git.grytoyr.io/npaste/plain/cli-script/npaste?h=$TAG"
-chmod +x /usr/local/bin/npaste
+curl -s -o "$INSTALL_DIR/npaste" "https://git.grytoyr.io/npaste/plain/cli-script/npaste?h=$TAG"
+chmod +x "$INSTALL_DIR/npaste"
 
 echo
 echo "Installation complete! Remember to edit the config file:"
