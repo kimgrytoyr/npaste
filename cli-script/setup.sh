@@ -23,8 +23,8 @@ fi
 
 if [ ! -d "$CFG_DIR" ]; then
     echo "Creating $CFG_DIR ..."
-    mkdir -p $CFG_DIR
-    chown $SUDO_USER:$SUDO_USER $CFG_DIR
+    mkdir -p "$CFG_DIR"
+    chown $SUDO_USER:$SUDO_USER "$CFG_DIR"
 else
     echo "$CFG_DIR already exists ..."
 fi
@@ -32,7 +32,7 @@ fi
 if [ ! -f "$CFG_DIR/cli.conf" ]; then
     echo "Creating config file ..."
     curl -s -o "$CFG_DIR/cli.conf" "https://git.grytoyr.io/npaste/plain/cli-script/cli.conf.example?h=$TAG"
-    chown $SUDO_USER:$SUDO_USER $CFG_DIR/cli.conf
+    chown $SUDO_USER:$SUDO_USER "$CFG_DIR/cli.conf"
 else
     echo "Config file already exists ..."
 fi
@@ -40,7 +40,7 @@ fi
 if [ ! -f "$CFG_DIR/vaults" ]; then
     echo "Creating vaults file ..."
     touch "$CFG_DIR/vaults"
-    chown $SUDO_USER:$SUDO_USER $CFG_DIR/vaults
+    chown $SUDO_USER:$SUDO_USER "$CFG_DIR/vaults"
 else
     echo "Vaults file already exists ..."
 fi
