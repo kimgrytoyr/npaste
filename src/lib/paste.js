@@ -106,6 +106,10 @@ const getRaw = (req, res, next) => {
     return res.status(500).send('Invalid type');
   }
 
+  if (paste.metadata.type === "text") {
+    res.setHeader("Content-Type", "text/plain");
+  }
+
   return res.end(paste.data, 'binary');
 }
 
