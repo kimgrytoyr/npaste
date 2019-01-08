@@ -33,6 +33,16 @@ router.get('/:paste/meta', (req, res, next) => {
   paste.getMeta(req, res, next);
 });
 
+/* GET paste as download */
+router.get('/:paste/download', (req, res, next) => {
+  paste.download(req, res, next);
+});
+
+/* GET paste filename */
+router.get('/:paste/download/filename', (req, res, next) => {
+  paste.filename(req, res, next);
+});
+
 /* POST paste */
 router.route('/')
   .post(auth.authenticate, upload.single('paste'), (req, res, next) => {
