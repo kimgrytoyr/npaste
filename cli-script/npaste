@@ -8,6 +8,7 @@ usage() {
     echo "npaste [OPTIONS] file"
     printf "\t-h --help\n"
     printf "\t-p --plaintext No syntax highlighting.\n"
+    printf "\t--get PASTE_ID Downloads a paste and (optionally decrypts it and) saves it to the current folder."
     printf "\t--age When to delete this item. Syntax: n[m|h|d|y], where n is an integer. minutes, hours, days, years. Example: 1h. Default: 0, ie. never deleted.\n"
     printf "\t--encrypt The paste will be encrypted using a secret key not known to the server.\n"
     printf "\t--vault If using --encrypt, this will also encrypt it with a password that is not in the URL.\n"
@@ -68,6 +69,13 @@ while [ "$1" != "" ]; do
             ;;
         -p | --plaintext)
             NPASTE_IS_PLAINTEXT=1
+            ;;
+        --get)
+            if [ "$2" == "" ]; then
+                echo "Must specify PASTE_ID"
+                exit 1
+            fi
+            NPASTE_PASTE_ID="$2"
             ;;
         --age)
             NPASTE_AGE=$VALUE
@@ -162,6 +170,27 @@ if [ -z "$NPASTE_USERNAME" ] || [ -z "$NPASTE_APIKEY" ] || [ -z "$NPASTE_URL" ];
     echo "All options are required, except default_age, default_archive and auto_pipe_command, which are optional."
 
     exit 2
+fi
+
+# If $NPASTE_PASTE_ID has been set, get the paste and exit
+if [ "$NPASTE_PASTE_ID" != "" ]; then
+    PASTE_URL="$NPASTE_URL$NPASTE_PASTE_ID/download"
+    FILENAME=$(curl "$PASTE_URL/filename")
+    STATUSCODE=$(curl -s -o /tmp/"$FILENAME" -w "%{http_code}" "$PASTE_URL")
+    echo "$STATUSCODE"
+    if [ "$STATUSCODE" == "200" ]; then
+        LOCAL_FILE="/tmp/$FILENAME"
+        gpg --decrypt < "$LOCAL_FILE" > /dev/null 2>&1
+        if [ "$?" == "0" ]; then
+            # This is an encrypted file. Use GPG to decrypt it..
+            gpg --decrypt "$LOCAL_FILE" | base64 --decode > "${FILENAME%.gpg}"
+            rm "$LOCAL_FILE"
+        else
+            # This is an ordinary file. Just save it.
+            mv "$LOCAL_FILE" "$FILENAME"
+        fi
+    fi
+    exit 1
 fi
 
 # determine archive status

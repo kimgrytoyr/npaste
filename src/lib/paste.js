@@ -10,6 +10,7 @@ const mmm = require('mmmagic'),
 const helpers = require('../lib/helpers');
 const config = require('../lib/config').getConfig();
 
+
 const getPaste = (pasteId) => {
   const paste = {
     metadata: null,
@@ -36,6 +37,53 @@ const getPaste = (pasteId) => {
   }
 
   return paste;
+}
+
+const download = (req, res, next) => {
+  const paste = getPaste(req.params.paste);
+  if (paste === false) {
+    return res.status(400).send('Paste not found');
+  }
+
+  if (paste.archived) {
+    return res.status(400).send('This paste has been archived and is no longer publicly available.');
+  }
+
+  if (paste.expired || paste.data == null) {
+    return res.status(400).send('This paste has expired and is no longer available.');
+  }
+
+  // Do not show pastes have a currently invalid mime type
+  if (helpers.validateMimeType(paste) === false || typeof paste.metadata.contentType === 'undefined') {
+    return res.status(500).send('Invalid type');
+  }
+
+  console.log(paste);
+
+  const file = config.path + paste.metadata.id + '.' + paste.metadata.extension;
+  return res.download(file, paste.metadata.id + '.' + paste.metadata.extension + (paste.metadata.encrypted ? '.gpg' : ''));
+}
+
+const filename = (req, res, next) => {
+  const paste = getPaste(req.params.paste);
+  if (paste === false) {
+    return res.status(400).send('Paste not found');
+  }
+
+  if (paste.archived) {
+    return res.status(400).send('This paste has been archived and is no longer publicly available.');
+  }
+
+  if (paste.expired || paste.data == null) {
+    return res.status(400).send('This paste has expired and is no longer available.');
+  }
+
+  // Do not show pastes have a currently invalid mime type
+  if (helpers.validateMimeType(paste) === false || typeof paste.metadata.contentType === 'undefined') {
+    return res.status(500).send('Invalid type');
+  }
+
+  res.status(200).send(paste.metadata.id + '.' + paste.metadata.extension + (paste.metadata.encrypted ? '.gpg' : ''));
 }
 
 const getFormatted = (req, res, next) => {
@@ -222,5 +270,7 @@ module.exports = {
   getRaw: getRaw,
   getMeta: getMeta,
   add: add,
-  delete: remove
+  delete: remove,
+  download: download,
+  filename: filename,
 }
