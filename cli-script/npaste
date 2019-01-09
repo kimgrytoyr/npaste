@@ -175,22 +175,41 @@ fi
 # If $NPASTE_PASTE_ID has been set, get the paste and exit
 if [ "$NPASTE_PASTE_ID" != "" ]; then
     PASTE_URL="$NPASTE_URL$NPASTE_PASTE_ID/download"
-    FILENAME=$(curl "$PASTE_URL/filename")
+    PASTE_KEY=""
+    if [[ "$NPASTE_PASTE_ID" == *"://"* ]]; then
+        PASTE_URL=$(echo "$NPASTE_PASTE_ID" | cut -d \# -f 1)
+        PASTE_KEY=$(echo "$NPASTE_PASTE_ID" | cut -d \# -f 2)
+        if [ "$PASTE_URL" == "$PASTE_KEY" ]; then
+            PASTE_KEY=""
+        fi
+        PASTE_URL="$PASTE_URL/download"
+    fi
+
+    FILENAME=$(curl -s "$PASTE_URL/filename")
     STATUSCODE=$(curl -s -o /tmp/"$FILENAME" -w "%{http_code}" "$PASTE_URL")
-    echo "$STATUSCODE"
     if [ "$STATUSCODE" == "200" ]; then
         LOCAL_FILE="/tmp/$FILENAME"
-        gpg --decrypt < "$LOCAL_FILE" > /dev/null 2>&1
-        if [ "$?" == "0" ]; then
-            # This is an encrypted file. Use GPG to decrypt it..
-            gpg --decrypt "$LOCAL_FILE" | base64 --decode > "${FILENAME%.gpg}"
+        if [ "$PASTE_KEY" != "" ]; then
+            # Encrypted file with key in URL. Decrypt
+            gpg -q --decrypt --batch --yes --passphrase "$PASTE_KEY" "$LOCAL_FILE" | base64 --decode > "${FILENAME%.gpg}"
             rm "$LOCAL_FILE"
+            echo "${FILENAME%.gpg}"
         else
-            # This is an ordinary file. Just save it.
-            mv "$LOCAL_FILE" "$FILENAME"
+            # Possibly encrypted file using only PASTE_ID. Check if should be decrypted.
+            gpg -q --decrypt < "$LOCAL_FILE" > /dev/null 2>&1
+            if [ "$?" == "0" ]; then
+                # This is an encrypted file. Use GPG to decrypt it..
+                gpg -q --decrypt "$LOCAL_FILE" | base64 --decode > "${FILENAME%.gpg}"
+                rm "$LOCAL_FILE"
+                echo "${FILENAME%.gpg}"
+            else
+                # Ordinary file. Move it.
+                mv "$LOCAL_FILE" "$FILENAME"
+                echo "$FILENAME"
+            fi
         fi
     fi
-    exit 1
+    exit 0
 fi
 
 # determine archive status
