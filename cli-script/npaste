@@ -209,6 +209,10 @@ if [ "$NPASTE_PASTE_ID" != "" ]; then
             fi
         fi
     fi
+    if [ "$STATUSCODE" == "404" ]; then
+        echo "Paste not found or server does not support downloads."
+        exit 1
+    fi
     exit 0
 fi
 
