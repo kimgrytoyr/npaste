@@ -1,3 +1,5 @@
+let markdownHighlighted = false;
+
 const ready = (fn) => {
   if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading"){
     fn();
@@ -28,6 +30,21 @@ const hasClass = (className, el) => {
     return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
 }
 
+const parseQueryString = () => {
+    const vars = []
+    let hash;
+    let q = document.URL.split('?')[1];
+    if(q !== undefined){
+        q = q.split('&');
+        for(let i = 0; i < q.length; i++){
+            hash = q[i].split('=');
+            vars.push(hash[1]);
+            vars[hash[0]] = hash[1];
+        }
+    }
+    return vars;
+}
+
 const toggleWrapping = (e) => {
   e.preventDefault();
   const elements = document.getElementsByClassName('hljs-ln-line');
@@ -45,10 +62,50 @@ const toggleWrapping = (e) => {
   }
 }
 
+const toggleMarkdown = (e) => {
+  if (e) {
+    e.preventDefault();
+  }
+  const paste = document.getElementById('paste');
+  const markdown = document.getElementById('markdown');
+
+  const hash = window.location.hash.substr(1);
+
+  if (paste.style.display === 'none') {
+    // Hide Markdown
+    paste.style.display = 'block';
+    markdown.style.display = 'none';
+    window.location.hash = '#' + window.location.hash.substr(1).split('#')[0] + '#code';
+  } else {
+    // Show markdown
+    paste.style.display = 'none';
+    markdown.style.display = 'block';
+    window.location.hash = '#' + window.location.hash.substr(1).split('#')[0] + '#markdown';
+
+    if (markdownHighlighted === false) {
+      const pre_elements = document.getElementsByTagName('pre');
+      for (let i = 0; i < pre_elements.length; i++) {
+        const el = pre_elements[i].getElementsByTagName('code')[0];
+        hljs.highlightBlock(el);
+        hljs.lineNumbersBlock(el);
+      }
+      markdownHighlighted = true;
+    }
+  }
+}
+
 ready(() => {
   const toggleWrappingLink = document.getElementById('toggleWrapping');
+  const toggleMarkdownLink = document.getElementById('toggleMarkdown');
   if (toggleWrappingLink) {
     toggleWrappingLink.addEventListener('click', toggleWrapping);
+  }
+  if (toggleMarkdownLink) {
+    toggleMarkdownLink.addEventListener('click', toggleMarkdown);
+    console.log(parseQueryString());
+    if (parseQueryString().view === 'markdown') {
+      toggleMarkdown();
+    }
   }
 
   // Encryption stuff
@@ -63,10 +120,13 @@ ready(() => {
     }
 
     const data = document.getElementById('paste').innerHTML;
+    const password = window.location.hash.substr(1).split('#')[0];
+    const viewAs = window.location.hash.substr(1).split('#')[1];
+
     try {
       options = {
         message: openpgp.message.readArmored(data),
-        password: window.location.hash.substr(1) + passphrase,
+        password: password + passphrase,
       };
     }
     catch (e) {
@@ -78,12 +138,20 @@ ready(() => {
     }
 
     openpgp.decrypt(options).then(function(plaintext) {
-      document.getElementById('paste').innerHTML = decodeURIComponent(escape(window.atob(plaintext.data)));
+      const data = decodeURIComponent(escape(window.atob(plaintext.data)));
+      const converter = new showdown.Converter();
+      converter.setFlavor('github');
+      document.getElementById('markdown').innerHTML = converter.makeHtml(data);
+      document.getElementById('paste').innerHTML = data;
       const block = document.getElementById('paste');
       hljs.highlightBlock(block);
       hljs.lineNumbersBlock(block);
       block.style.display = 'block';
       document.getElementById('decrypting').style.display = 'none';
+
+      if (viewAs === 'markdown') {
+        toggleMarkdown();
+      }
     }).catch(function(error) {
       const errorDiv = document.getElementById('error');
       errorDiv.innerHTML = 'Unable to decrypt message. You probably have the wrong decryption key or passphrase.';
