@@ -77,6 +77,9 @@ while [ "$1" != "" ]; do
             fi
             NPASTE_PASTE_ID="$2"
             ;;
+        --output)
+            NPASTE_GET_OUTPUT=1
+            ;;
         --age)
             NPASTE_AGE=$VALUE
             NPASTE_AGE_HAS_BEEN_SET=1
@@ -103,9 +106,11 @@ while [ "$1" != "" ]; do
             if [ "$1" = "$LAST_ARG" ]; then
                 NPASTE_FILE="$1"
             else
-                echo "ERROR: unknown parameter \"$PARAM\""
-                usage
-                exit 1
+                if [ "$NPASTE_PASTE_ID" == "" ]; then
+                    echo "ERROR: unknown parameter \"$PARAM\""
+                    usage
+                    exit 1
+                fi
             fi
             ;;
     esac
@@ -193,7 +198,11 @@ if [ "$NPASTE_PASTE_ID" != "" ]; then
             # Encrypted file with key in URL. Decrypt
             gpg -q --decrypt --batch --yes --passphrase "$PASTE_KEY" "$LOCAL_FILE" | base64 --decode > "${FILENAME%.gpg}"
             rm "$LOCAL_FILE"
-            echo "${FILENAME%.gpg}"
+            if [ "$NPASTE_GET_OUTPUT" == "1" ]; then
+                cat "${FILENAME%.gpg}"
+            else
+                echo "${FILENAME%.gpg}"
+            fi
         else
             # Possibly encrypted file using only PASTE_ID. Check if should be decrypted.
             gpg -q --decrypt < "$LOCAL_FILE" > /dev/null 2>&1
@@ -201,11 +210,19 @@ if [ "$NPASTE_PASTE_ID" != "" ]; then
                 # This is an encrypted file. Use GPG to decrypt it..
                 gpg -q --decrypt "$LOCAL_FILE" | base64 --decode > "${FILENAME%.gpg}"
                 rm "$LOCAL_FILE"
-                echo "${FILENAME%.gpg}"
+                if [ "$NPASTE_GET_OUTPUT" == "1" ]; then
+                    cat "${FILENAME%.gpg}"
+                else
+                    echo "${FILENAME%.gpg}"
+                fi
             else
                 # Ordinary file. Move it.
                 mv "$LOCAL_FILE" "$FILENAME"
-                echo "$FILENAME"
+                if [ "$NPASTE_GET_OUTPUT" == "1" ]; then
+                    cat "$FILENAME"
+                else
+                    echo "$FILENAME"
+                fi
             fi
         fi
     fi
@@ -257,10 +274,11 @@ if [ "$NPASTE_DO_ENCRYPT" = "1" ]; then
     fi
 
     # create random encryption key
-    KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $NPASTE_ENCRYPTION_KEY_LENGTH | head -n 1)
+    #KEY=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $NPASTE_ENCRYPTION_KEY_LENGTH | head -n 1)
+    KEY=$(openssl rand -hex $NPASTE_ENCRYPTION_KEY_LENGTH)
 
     # upload file to npaste
-    NPASTE_PASTE_URL=$(cat $NPASTE_FILE | base64 | gpg --armor --batch --passphrase "$KEY$NPASTE_VAULT_KEY" --symmetric | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F mimetype=$MIME_TYPE" "-F encrypted=1" "-F vault=$NPASTE_VAULT")
+    NPASTE_PASTE_URL=$(cat $NPASTE_FILE | base64 | /usr/local/bin/gpg --armor --batch --passphrase "$KEY$NPASTE_VAULT_KEY" --symmetric | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F mimetype=$MIME_TYPE" "-F encrypted=1" "-F vault=$NPASTE_VAULT")
 else
     NPASTE_PASTE_URL=$(cat $NPASTE_FILE | api_request $NPASTE_USERNAME $NPASTE_APIKEY $NPASTE_URL "-F paste=@-" "-F plain=$NPASTE_IS_PLAINTEXT" "-F age=$NPASTE_AGE" "-F archive=$NPASTE_DO_ARCHIVE" "-F encrypted=0")
 fi
