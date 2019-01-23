@@ -102,66 +102,83 @@ ready(() => {
   }
   if (toggleMarkdownLink) {
     toggleMarkdownLink.addEventListener('click', toggleMarkdown);
-    console.log(parseQueryString());
-    if (parseQueryString().view === 'markdown') {
-      toggleMarkdown();
-    }
   }
 
   // Encryption stuff
   if (window.location.hash) {
-    const openpgp = window.openpgp;
-    openpgp.initWorker({ path:'/javascripts/openpgp.worker.min.js' });
-
-    console.log("Decrypting text..");
-    let passphrase = '';
-    if (window.vault) {
-      passphrase = prompt("Enter passphrase for vault '" + window.vault + "':");
-    }
-
     const data = document.getElementById('paste').innerHTML;
     const password = window.location.hash.substr(1).split('#')[0];
     const viewAs = window.location.hash.substr(1).split('#')[1];
 
-    try {
-      options = {
-        message: openpgp.message.readArmored(data),
-        password: password + passphrase,
-      };
-    }
-    catch (e) {
-      const errorDiv = document.getElementById('error');
-      errorDiv.innerHTML = 'Unable to decrypt message. The original content has probably been tampered with.';
-      errorDiv.style.display = 'block';
-      document.getElementById('decrypting').style.display = 'none';
-      return;
-    }
+    if (password != '') {
+      const openpgp = window.openpgp;
+      openpgp.initWorker({ path:'/javascripts/openpgp.worker.min.js' });
 
-    openpgp.decrypt(options).then(function(plaintext) {
-      const data = decodeURIComponent(escape(window.atob(plaintext.data)));
+      console.log("Decrypting text..");
+      let passphrase = '';
+      if (window.vault) {
+        passphrase = prompt("Enter passphrase for vault '" + window.vault + "':");
+      }
+
+      try {
+        options = {
+          message: openpgp.message.readArmored(data),
+          password: password + passphrase,
+        };
+      }
+      catch (e) {
+        const errorDiv = document.getElementById('error');
+        errorDiv.innerHTML = 'Unable to decrypt message. The original content has probably been tampered with.';
+        errorDiv.style.display = 'block';
+        document.getElementById('decrypting').style.display = 'none';
+        return;
+      }
+
+      openpgp.decrypt(options).then(function(plaintext) {
+        const data = decodeURIComponent(escape(window.atob(plaintext.data)));
+        const converter = new showdown.Converter();
+        converter.setFlavor('github');
+        document.getElementById('markdown').innerHTML = converter.makeHtml(data);
+        document.getElementById('paste').innerHTML = data;
+        const block = document.getElementById('paste');
+        hljs.highlightBlock(block);
+        hljs.lineNumbersBlock(block);
+        block.style.display = 'block';
+        document.getElementById('decrypting').style.display = 'none';
+
+        if (viewAs === 'markdown') {
+          toggleMarkdown();
+        }
+      }).catch(function(error) {
+        const errorDiv = document.getElementById('error');
+        errorDiv.innerHTML = 'Unable to decrypt message. You probably have the wrong decryption key or passphrase.';
+        errorDiv.style.display = 'block';
+        document.getElementById('decrypting').style.display = 'none';
+      });
+    } else {
+      const block = document.getElementById('paste');
       const converter = new showdown.Converter();
       converter.setFlavor('github');
       document.getElementById('markdown').innerHTML = converter.makeHtml(data);
-      document.getElementById('paste').innerHTML = data;
-      const block = document.getElementById('paste');
       hljs.highlightBlock(block);
       hljs.lineNumbersBlock(block);
       block.style.display = 'block';
-      document.getElementById('decrypting').style.display = 'none';
-
       if (viewAs === 'markdown') {
         toggleMarkdown();
       }
-    }).catch(function(error) {
-      const errorDiv = document.getElementById('error');
-      errorDiv.innerHTML = 'Unable to decrypt message. You probably have the wrong decryption key or passphrase.';
-      errorDiv.style.display = 'block';
-      document.getElementById('decrypting').style.display = 'none';
-    });
+    }
   } else {
+      const viewAs = window.location.hash.substr(1).split('#')[1];
+      const data = document.getElementById('paste').innerHTML;
       const block = document.getElementById('paste');
+      const converter = new showdown.Converter();
+      converter.setFlavor('github');
+      document.getElementById('markdown').innerHTML = converter.makeHtml(data);
       hljs.highlightBlock(block);
       hljs.lineNumbersBlock(block);
       block.style.display = 'block';
+      if (viewAs === 'markdown') {
+        toggleMarkdown();
+      }
   }
 });
