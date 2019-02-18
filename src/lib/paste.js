@@ -211,7 +211,7 @@ const add = (req, res, next) => {
       },
     }) === false) {
       fs.unlinkSync(req.file.path);
-      return res.status(400).send('MIME type not allowed: ' + givenType);
+      return res.status(400).send('MIME type not allowed: ' + mimeType);
     }
   
     if (config.mime_types[mimeType]) {
