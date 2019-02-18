@@ -199,26 +199,36 @@ const add = (req, res, next) => {
   const magic = new Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_MIME_ENCODING);
   magic.detectFile(req.file.path, (err, result) => {
     if (err) throw err;
-    let type = result.split(';')[0];
+    let mimeType = result.split(';')[0];
 
     if (req.body.mimetype) {
-      type = req.body.mimetype;
+      mimeType = req.body.mimetype;
     }
 
-    if (config.mime_types[type]) {
-      contentType = config.mime_types[type].mime_type;
-      extension = config.mime_types[type].extension;
-    }
-
-    if (extension == null) {
+    if (helpers.validateMimeType({
+      metadata: {
+        contentType: mimeType,
+      },
+    }) === false) {
       fs.unlinkSync(req.file.path);
-      return res.status(400).send('MIME type not allowed: ' + type);
+      return res.status(400).send('MIME type not allowed: ' + givenType);
+    }
+  
+    if (config.mime_types[mimeType]) {
+      type = config.mime_types[mimeType].type;
+      contentType = config.mime_types[mimeType].mime_type;
+      extension = config.mime_types[mimeType].extension;
+    } else {
+      // No default set. Fallback to text/plain.
+      type = "text";
+      contentType = "text/plain";
+      extension = "txt";
     }
 
     const metadata = {
       id: filename,
       timestamp: new Date().getTime(),
-      type: config.mime_types[type].type,
+      type: type,
       contentType: contentType,
       extension: extension,
       submitter: user.name,

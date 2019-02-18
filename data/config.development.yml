@@ -20,10 +20,10 @@ max_age: 0
 #              Use n[y|d|h|m|s] where n is a positive number.
 default_age: 0
 
-# mime_types: npaste will allow pastes with the following mime types. The options within each
-#             block allows you to specify the type (text or image) and the mime type and
-#             extension. The mime type will be used when serving the paste in raw format.
-#             The actual files that are saved to disk will use the provided extension.
+# mime_types: The options within each block allows you to specify the type (text or image)
+#             and the mime type and extension. The mime type will be used when serving the
+#             paste in raw format. The actual files that are saved to disk will use the
+#             provided extension.
 mime_types:
     text/plain:
         type: text
@@ -49,3 +49,7 @@ mime_types:
       type: image
       mime_type: image/jpeg
       extension: jpg
+
+# mime_types_blacklist: npaste will not allow pastes with the following mime types.
+mime_types_blacklist:
+    - application/x-msdownload

@@ -12,7 +12,7 @@ exports.getMetadata = (id, path) => {
 }
 
 exports.validateMimeType = (paste) => {
-  if (typeof config.mime_types[paste.metadata.contentType] === 'undefined') return false;
+  if (config.mime_types_blacklist.indexOf(paste.metadata.contentType) !== -1) return false;
 
   return true;
 }
