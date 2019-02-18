@@ -10,6 +10,11 @@ mime_types:
         mime_type: text/plain
         extension: txt
 
+    application/pgp:
+      type: text
+      mime_type: application/pgp
+      extension: txt
+
     application/json: 
       type: text
       mime_type: application/json
