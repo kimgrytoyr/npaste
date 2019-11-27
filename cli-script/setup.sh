@@ -1,7 +1,7 @@
 #!/bin/bash
 #########################################################
 #
-#   curl https://paste.grytoyr.io/setup.sh | sudo env CFG_DIR=/home/user/.config/npaste bash
+#   curl https://src.grytoyr.io/kim/npaste/raw/branch/master/cli-script/setup.sh | sudo env CFG_DIR=/home/user/.config/npaste bash
 #
 #########################################################
 
@@ -39,7 +39,7 @@ fi
 
 if [ ! -f "$CFG_DIR/cli.conf" ]; then
     echo "Creating config file ..."
-    curl -s -o "$CFG_DIR/cli.conf" "https://git.grytoyr.io/npaste/plain/cli-script/cli.conf.example?h=$TAG"
+    curl -s -o "$CFG_DIR/cli.conf" "https://src.grytoyr.io/kim/npaste/raw/tag/$TAG/cli-script/cli.conf.example"
     chown $SUDO_USER:$GROUPNAME "$CFG_DIR/cli.conf"
 else
     echo "Config file already exists ..."
@@ -54,7 +54,7 @@ else
 fi
 
 echo "Downloading npaste script $TAG ..."
-curl -s -o "$INSTALL_DIR/npaste" "https://git.grytoyr.io/npaste/plain/cli-script/npaste?h=$TAG"
+curl -s -o "$INSTALL_DIR/npaste" "https://src.grytoyr.io/kim/npaste/raw/tag/$TAG/cli-script/npaste"
 chmod +x "$INSTALL_DIR/npaste"
 
 echo
