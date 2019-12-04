@@ -11,10 +11,26 @@ exports.getMetadata = (id, path) => {
   return JSON.parse(fs.readFileSync(path + id + '.meta'));
 }
 
+// Increase number of times paste has been opened
+exports.increaseTimesOpened = (paste) => {
+  if (paste.metadata.timesOpened) {
+    paste.metadata.timesOpened++;
+  } else {
+    paste.metadata.timesOpened = 1;
+  }
+
+  this.saveMetadata(paste.metadata.id, paste.metadata);
+}
+
 exports.validateMimeType = (paste) => {
   if (config.mime_types_blacklist.indexOf(paste.metadata.contentType) !== -1) return false;
 
   return true;
+}
+
+// Save metadata for a paste
+exports.saveMetadata = (id, metadata) => {
+  fs.writeFileSync(config.path + id + '.meta', JSON.stringify(metadata));
 }
 
 
