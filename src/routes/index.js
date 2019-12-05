@@ -3,7 +3,7 @@
 // npm modules
 const express = require('express');
 const router = express.Router({ strict: true });
-const multer  = require('multer');
+const multer = require('multer');
 const config = require('../lib/config').getConfig(); // local
 const upload = multer({ dest: config.path })
 
@@ -13,7 +13,11 @@ const paste = require('../lib/paste');
 
 /* GET home page. */
 router.get('/', (req, res, next) => {
-  res.render('index', { title: 'npaste' });
+  res.render('index', {
+    title: 'npaste',
+    generatedTimestamp: new Date().toISOString(),
+    version: config.version
+  });
 });
 
 /* GET paste */
