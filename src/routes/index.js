@@ -13,7 +13,11 @@ const paste = require('../lib/paste');
 
 /* GET home page. */
 router.get('/', (req, res, next) => {
-  res.render('index', { title: 'npaste' });
+  res.render('index', {
+    title: 'npaste',
+    generatedTimestamp: new Date().toISOString(),
+    version: config.version
+  });
 });
 
 /* GET paste */
