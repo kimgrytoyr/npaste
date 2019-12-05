@@ -57,8 +57,9 @@ NPASTE_ARCHIVE=0
 NPASTE_MAX_OPENS=0
 NPASTE_NO_ARCHIVE=0
 
-# override from config if no age has been set
+# override from config if no value has been set
 NPASTE_AGE_HAS_BEEN_SET=0
+NPASTE_MAX_OPENS_HAS_BEEN_SET=0
 
 # get parameters
 while [ "$1" != "" ]; do
@@ -84,6 +85,7 @@ while [ "$1" != "" ]; do
             ;;
         --max-opens)
             NPASTE_MAX_OPENS=$VALUE
+            NPASTE_MAX_OPENS_HAS_BEEN_SET=1
             ;;
         --age)
             NPASTE_AGE=$VALUE
@@ -154,6 +156,12 @@ while read -r line || [[ -n $line ]]; do
             ;;
         default_encrypt)
             NPASTE_DEFAULT_ENCRYPT=$VALUE
+            ;;
+        default_max_opens)
+            if [ $NPASTE_MAX_OPENS_HAS_BEEN_SET -eq 0 ]; then
+                # override max opens, as no max opens has been provided at runtime
+                NPASTE_MAX_OPENS=$VALUE
+            fi
             ;;
         encryption_key_length)
             NPASTE_ENCRYPTION_KEY_LENGTH=$VALUE
