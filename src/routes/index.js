@@ -3,7 +3,7 @@
 // npm modules
 const express = require('express');
 const router = express.Router({ strict: true });
-const multer  = require('multer');
+const multer = require('multer');
 const config = require('../lib/config').getConfig(); // local
 const upload = multer({ dest: config.path })
 
