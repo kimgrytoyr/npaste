@@ -4,6 +4,31 @@ const fs = require('fs');
 // local modules
 const config = require('./config').getConfig();
 
+// Check if paste is unavailable
+exports.pasteIsUnavailable = (paste, res) => {
+  if (paste === false) {
+    return res.status(400).send('Paste not found');
+  }
+
+  if (paste.archived) {
+    return res.status(400).send('This paste has been archived and is no longer publicly available.');
+  }
+
+  if (paste.expired || paste.data == null) {
+    return res.status(400).send('This paste has expired and is no longer available.');
+  }
+
+  if (paste.metadata.maxOpens && paste.metadata.maxOpens > 0 && paste.metadata.timesOpened && paste.metadata.timesOpened >= paste.metadata.maxOpens) {
+    return res.status(400).send('This paste has reached its maximum number of views');
+  }
+
+  // Do not show pastes have a currently invalid mime type
+  if (this.validateMimeType(paste) === false || typeof paste.metadata.contentType === 'undefined') {
+    return res.status(500).send('Invalid type');
+  }
+
+  return false;
+}
 
 // Get metadata for a paste
 exports.getMetadata = (id, path) => {

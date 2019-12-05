@@ -41,25 +41,10 @@ const getPaste = (pasteId) => {
 
 const download = (req, res, next) => {
   const paste = getPaste(req.params.paste);
-  if (paste === false) {
-    return res.status(400).send('Paste not found');
-  }
 
-  if (paste.archived) {
-    return res.status(400).send('This paste has been archived and is no longer publicly available.');
-  }
-
-  if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and is no longer available.');
-  }
-
-  if (paste.metadata.maxOpens && paste.metadata.maxOpens > 0 && paste.metadata.timesOpened && paste.metadata.timesOpened >= paste.metadata.maxOpens) {
-    return res.status(400).send('This paste has reached its maximum number of views');
-  }
-
-  // Do not show pastes have a currently invalid mime type
-  if (helpers.validateMimeType(paste) === false || typeof paste.metadata.contentType === 'undefined') {
-    return res.status(500).send('Invalid type');
+  const pasteIsUnavailable = helpers.pasteIsUnavailable(paste, res);
+  if (pasteIsUnavailable !== false) {
+    return pasteIsUnavailable;
   }
 
   helpers.increaseTimesOpened(paste);
@@ -72,25 +57,10 @@ const download = (req, res, next) => {
 
 const filename = (req, res, next) => {
   const paste = getPaste(req.params.paste);
-  if (paste === false) {
-    return res.status(400).send('Paste not found');
-  }
 
-  if (paste.archived) {
-    return res.status(400).send('This paste has been archived and is no longer publicly available.');
-  }
-
-  if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and is no longer available.');
-  }
-
-  if (paste.metadata.maxOpens && paste.metadata.maxOpens > 0 && paste.metadata.timesOpened && paste.metadata.timesOpened >= paste.metadata.maxOpens) {
-    return res.status(400).send('This paste has reached its maximum number of views');
-  }
-
-  // Do not show pastes have a currently invalid mime type
-  if (helpers.validateMimeType(paste) === false || typeof paste.metadata.contentType === 'undefined') {
-    return res.status(500).send('Invalid type');
+  const pasteIsUnavailable = helpers.pasteIsUnavailable(paste, res);
+  if (pasteIsUnavailable !== false) {
+    return pasteIsUnavailable;
   }
 
   res.status(200).send(paste.metadata.id + '.' + paste.metadata.extension + (paste.metadata.encrypted ? '.gpg' : ''));
@@ -98,20 +68,10 @@ const filename = (req, res, next) => {
 
 const getFormatted = (req, res, next) => {
   const paste = getPaste(req.params.paste);
-  if (paste === false) {
-    return res.status(400).send('Paste not found');
-  }
 
-  if (paste.archived) {
-    return res.status(400).send('This paste has been archived and is no longer publicly available.');
-  }
-
-  if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and is no longer available.');
-  }
-
-  if (paste.metadata.maxOpens && paste.metadata.maxOpens > 0 && paste.metadata.timesOpened && paste.metadata.timesOpened >= paste.metadata.maxOpens) {
-    return res.status(400).send('This paste has reached its maximum number of views');
+  const pasteIsUnavailable = helpers.pasteIsUnavailable(paste, res);
+  if (pasteIsUnavailable !== false) {
+    return pasteIsUnavailable;
   }
 
   // TODO: Cleanup/simplification
@@ -131,11 +91,6 @@ const getFormatted = (req, res, next) => {
     version: config.version
   };
 
-  // Do not show pastes have a currently invalid mime type
-  if (helpers.validateMimeType(paste) === false) {
-    return res.status(500).send('Invalid type');
-  }
-
   if (paste.metadata.type == 'text' || paste.metadata.contentType.split('/')[0] == 'text') {
     // We're good..
   } else if (paste.metadata.type == "image" || paste.metadata.contentType.split('/')[0] == 'image') {
@@ -154,24 +109,10 @@ const getFormatted = (req, res, next) => {
 
 const getRaw = (req, res, next) => {
   const paste = getPaste(req.params.paste);
-  if (paste === false) {
-    return res.status(400).send('Paste not found');
-  }
 
-  if (paste.archived) {
-    return res.status(400).send('This paste has been archived and is no longer publicly available.');
-  }
-
-  if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and is no longer available.');
-  }
-  // Do not show pastes have a currently invalid mime type
-  if (helpers.validateMimeType(paste) === false || typeof paste.metadata.contentType === 'undefined') {
-    return res.status(500).send('Invalid type');
-  }
-
-  if (paste.metadata.maxOpens && paste.metadata.maxOpens > 0 && paste.metadata.timesOpened && paste.metadata.timesOpened >= paste.metadata.maxOpens) {
-    return res.status(400).send('This paste has reached its maximum number of views');
+  const pasteIsUnavailable = helpers.pasteIsUnavailable(paste, res);
+  if (pasteIsUnavailable !== false) {
+    return pasteIsUnavailable;
   }
 
   helpers.increaseTimesOpened(paste);
@@ -185,16 +126,11 @@ const getRaw = (req, res, next) => {
 
 const getMeta = (req, res, next) => {
   const paste = getPaste(req.params.paste);
-  if (paste === false) {
-    return res.status(400).send('Paste not found');
-  }
 
-  if (paste.archived) {
-    return res.status(400).send('This paste has been archived and is no longer publicly available.');
-  }
+  const pasteIsUnavailable = helpers.pasteIsUnavailable(paste, res);
 
-  if (paste.expired || paste.data == null) {
-    return res.status(400).send('This paste has expired and is no longer available.');
+  if (pasteIsUnavailable !== false) {
+    return pasteIsUnavailable;
   }
 
   res.setHeader("Content-Type", "application/json");
