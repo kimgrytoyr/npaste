@@ -3,7 +3,7 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 
 const env = process.env.NODE_ENV || 'development';
-const VERSION = "v0.6.4.2";
+const VERSION = "v0.6.5";
 
 exports.getConfig = () => {
   const configFolder = process.env.CONFIG_PATH || '../data/';

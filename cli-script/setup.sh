@@ -13,7 +13,7 @@ case "$(uname -s)" in
 esac
 
 if [ -z "$TAG" ]; then
-	TAG=v0.6
+	TAG=v0.6.5
 fi
 
 if [ -z "$CFG_DIR"  ]; then
