@@ -6,7 +6,7 @@ block head
     script(src='/javascripts/decrypt.js')
   if paste.vault
     script.
-      window.vault = '#{paste.vault}';
+      window.vault = `${paste.vault}`;
 block content
   #content
     include header.pug
@@ -14,12 +14,12 @@ block content
     if paste.encrypted === true
       div#data #{data}
       p.
-        #[a(href="#{rawUrl}") #[img#image.pasted(src="")]]
+        #[a(href=`${rawUrl}`) #[img#image.pasted(src="")]]
 
       p#decrypting Decrypting paste..
 
     if paste.encrypted === false
       p.
-        #[a(href="#{rawUrl}") #[img#image.pasted(src="#{data}")]]
+        #[a(href=`${rawUrl}`) #[img#image.pasted(src=`${data}`)]]
 
   include footer.pug

@@ -11,7 +11,7 @@ block head
   link(rel='stylesheet', href='/stylesheets/line-numbers.css')
   if paste.vault
     script.
-      window.vault = '#{paste.vault}';
+      window.vault = `${paste.vault}`;
 block content
   #content
     include header.pug
