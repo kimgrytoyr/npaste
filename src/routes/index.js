@@ -11,6 +11,15 @@ const upload = multer({ dest: config.path })
 const auth = require('../lib/auth');
 const paste = require('../lib/paste');
 
+/* GET robots.txt */
+router.get('/robots.txt', (req, res, next) => {
+  res.end(`User-agent: *
+User-agent: AdsBot-Google
+User-agent: AdsBot-Google-Mobile
+User-agent: AdsBot-Google-Mobile-Apps
+Disallow: /`, 'binary');
+});
+
 /* GET home page. */
 router.get('/', (req, res, next) => {
   res.render('index', {
