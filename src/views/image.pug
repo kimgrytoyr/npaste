@@ -9,7 +9,7 @@ block head
       window.vault = '#{paste.vault}';
 block content
   #content
-    include header.jade
+    include header.pug
 
     if paste.encrypted === true
       div#data #{data}
@@ -22,4 +22,4 @@ block content
       p.
         #[a(href="#{rawUrl}") #[img#image.pasted(src="#{data}")]]
 
-  include footer.jade
+  include footer.pug
